@@ -2,3 +2,4 @@
 Config.py
 .vscode/*
 __pycache__/*
+classes/__pycache__/*
