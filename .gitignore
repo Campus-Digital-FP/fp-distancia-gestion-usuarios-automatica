@@ -1,0 +1,4 @@
+!gitignore
+Config.py
+.vscode/*
+__pycache__/*
