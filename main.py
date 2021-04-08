@@ -200,7 +200,7 @@ def existeAlumnoEnMoodle(moodle, alumno):
     print("existeAlumnoEnMoodle(...)")
 
     # moosh -n  user-list "username = 'estudiante1'"
-    cmd = "moosh -n user-list \"username = '"+ alumno.getDocumento() +"'\""
+    cmd = "moosh -n user-list \"username = '"+ alumno.getDocumento().lower() +"'\""
     
     username = run_moosh_command(moodle, cmd, True)
 
@@ -217,16 +217,16 @@ def crearAlumnoEnMoodle(moodle, alumno):
     Devuelve el id del alumno creado
     """
     print("crearAlumnoEnMoodle(...)")
-    cmd = "moosh -n user-create --password estudiante --email " + alumno.getEmail() \
+    cmd = "moosh -n user-create --password changeme --email " + alumno.getEmail() \
         + " --digest 2 --city Aragón --country ES --firstname \"" +  alumno.getNombre() \
         + "\" --lastname \"" +  alumno.getApellidos() + "\" " \
         + alumno.getDocumento().lower()
 
-    print("cmd: '", cmd, "'")
-
     idUser = run_moosh_command(moodle, cmd, True)
+
     print("idUser: '",idUser,"'")
-    # moosh user-create --password estudiante --email alumnado@education.catedu.es --digest 2 --city Aragón --country ES --firstname "Estudiante10" --lastname "Diez" estudiante10
+    print("idUser: '",int(idUser),"'")
+
     return idUser
     #
     # End of crearAlumnoEnMoodle
