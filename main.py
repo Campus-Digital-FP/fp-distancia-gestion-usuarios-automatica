@@ -29,7 +29,6 @@ def get_moodles():
         {
             "url": line.split()[-1].replace("adistanciafparagones_moodle_1", ".adistanciafparagon.es"),
             "container_name": line.split()[-1],
-            "server": server,
         }
         for line in lines
         if line.split()[-1].endswith("moodle_1")
