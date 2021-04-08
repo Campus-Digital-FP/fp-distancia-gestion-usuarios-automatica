@@ -52,7 +52,7 @@ def main():
     # 
     moodle = get_moodle("test")[0]
     alumnosFicheroJson = []
-    alumnosMoodle = []
+    alumnosMoodle = get_alumnos_moodle() # Alumnos que figuran en moodle antes de ejecutar el script
         
     # Creo la conexión para la 1era llamada
     miConexion = Conexion(url1, path1+"2020", usuario1, password1, method1)
@@ -90,10 +90,11 @@ def main():
             print("Error en la llamada al 1er web service")
     
     # Iterating over alumnosMoodle
-    # for alumnoMoodle in alumnosMoodle:
+    for alumnoMoodle in alumnosMoodle:
         # TODO
     
     # Iterating over alumnosFicheroJson
+    """
     for alumno in alumnosFicheroJson:
         # print("-", repr(alumno) )
         # los cursos de moodle tienen el formato shortname ${COD_CENTRE}-${siglasCiclo}-${COD_ENSENANZA}
@@ -102,7 +103,7 @@ def main():
         if not existeAlumnoEnMoodle(moodle, alumno):
             crearAlumnoEnMoodle(moodle, alumno)
         # TODO
-
+    """
         
     # print("Alumnos en fichero json", len(alumnosFicheroJson) )
     #
@@ -110,6 +111,35 @@ def main():
     #
     # End of main 
     # 
+
+def get_alumnos_moodle()
+    print("get_alumnos_moodle(...)")
+    """
+    Devuelve un objeto como el siguiente:
+    #
+    """
+    cmd = "moosh -n user-list \"username = '"+ alumno.getDocumento().lower() +"'\""
+    alumnosMoodle = run_moosh_command(moodle, cmd, True)
+    print("alumnosMoodle: '",alumnosMoodle, "'" )
+    """
+    alumnos = []
+    
+    data = os.popen(f"docker ps | grep {subdomain}").read()
+    data_s = io.StringIO(data).read()
+    lines = data_s.splitlines()
+    container = [
+        {
+            "url": line.split()[-1].replace("adistanciafparagones_moodle_1", ".adistanciafparagon.es"),
+            "container_name": line.split()[-1],
+        }
+        for line in lines
+        if line.split()[-1].endswith("moodle_1")
+    ]
+    alumnos.extend(containers)
+    """
+
+    return None
+
 
 def procesaJsonEstudiantes(y, alumnosFicheroJson):
     """
