@@ -20,12 +20,12 @@ def get_moodle(subdomain):
     Devuelve un objeto como el siguiente:
     #
     """
-    urls = []
+    # urls = []
     
     data = os.popen(f"docker ps | grep {subdomain}").read()
     data_s = io.StringIO(data).read()
     lines = data_s.splitlines()
-    containers = [
+    container = [
         {
             "url": line.split()[-1].replace("adistanciafparagones_moodle_1", ".adistanciafparagon.es"),
             "container_name": line.split()[-1],
@@ -33,9 +33,9 @@ def get_moodle(subdomain):
         for line in lines
         if line.split()[-1].endswith("moodle_1")
     ]
-    urls.extend(containers)
+    # urls.extend(containers)
 
-    return urls
+    return container
 
 
 def run_moosh_command(moodle, command, capture=False):
