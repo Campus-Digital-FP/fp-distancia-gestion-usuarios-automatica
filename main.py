@@ -22,7 +22,7 @@ def get_moodles():
     """
     urls = []
     
-    data = os.popen(f"docker ps").read()
+    data = os.popen(f"docker ps | grep test").read()
     data_s = io.StringIO(data).read()
     lines = data_s.splitlines()
     containers = [
@@ -49,9 +49,6 @@ def run_moosh_command(moodle, command, capture=False):
 def main():
     # 
     moodles = get_moodles()
-    print("moodles")
-    print(moodles)
-    print("#########")
     alumnosFicheroJson = []
     alumnosMoodle = []
         
