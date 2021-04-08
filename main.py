@@ -89,16 +89,18 @@ def main():
         else: # Error en la 1era llamada
             print("Error en la llamada al 1er web service")
     
-    # Iterating over alumnosMoodle
-    for alumnoMoodle in alumnosMoodle:
+    # Añado a un listado los usuarios que no estén en el listado y stén en moodle
+    # for alumnoMoodle in alumnosMoodle:
         # TODO
-    
+    # envío por email el listado de usuarios que no están en el fichero y si en el moodle
+    # TODO
+
+
     # Iterating over alumnosFicheroJson
     """
     for alumno in alumnosFicheroJson:
         # print("-", repr(alumno) )
-        # los cursos de moodle tienen el formato shortname ${COD_CENTRE}-${siglasCiclo}-${COD_ENSENANZA}
-
+        
         # Creo en moodle los alumnos que estén en el json y no estén en moodle
         if not existeAlumnoEnMoodle(moodle, alumno):
             crearAlumnoEnMoodle(moodle, alumno)
