@@ -52,7 +52,7 @@ def main():
     # 
     moodle = get_moodle("test")[0]
     alumnosFicheroJson = []
-    alumnosMoodle = get_alumnos_moodle() # Alumnos que figuran en moodle antes de ejecutar el script
+    alumnosMoodle = get_alumnos_moodle(moodle) # Alumnos que figuran en moodle antes de ejecutar el script
         
     # Creo la conexión para la 1era llamada
     miConexion = Conexion(url1, path1+"2020", usuario1, password1, method1)
@@ -114,7 +114,7 @@ def main():
     # End of main 
     # 
 
-def get_alumnos_moodle():
+def get_alumnos_moodle(moodle):
     print("get_alumnos_moodle(...)")
     """
     Devuelve un objeto como el siguiente:
