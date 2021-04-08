@@ -21,6 +21,18 @@ class Alumno:
     def getDocumento(self):
         return self.__documento
 
+    def getNombre(self):
+        return self.__nombre
+
+    def getPape(self):
+        return self.__pape
+
+    def getSape(self):
+        return self.__sape
+
+    def getEmail(self):
+        return self.__email
+
     def __repr__(self):
         cadena =  "idAlumno: " + str(self.__idAlumno) \
             + ", idTipoDocumento: " + str(self.__idTipoDocumento) \
