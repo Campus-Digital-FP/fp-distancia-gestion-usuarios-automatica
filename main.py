@@ -204,7 +204,7 @@ def existeAlumnoEnMoodle(moodle, alumno):
     
     username = run_moosh_command(moodle, cmd, True)
     print("username: '", username, "'")
-    print("username type: " + type(username) )
+    print("username type: ", type(username) )
 
     if username is None:
         return False
