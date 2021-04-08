@@ -40,7 +40,7 @@ def get_moodle(subdomain):
 
 def run_moosh_command(moodle, command, capture=False):
     print("run_moosh_command(...)")
-    print("moodle: ", moodle)
+    print("command: '", command, "'")
     command_string = f"docker exec {moodle['container_name']} {command}"
     if capture:
         data = os.popen(command_string).read()
