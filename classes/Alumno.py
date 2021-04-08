@@ -24,6 +24,12 @@ class Alumno:
     def getNombre(self):
         return self.__nombre
 
+    def getApellidos(self):
+        apellidos = self.__pape
+        if self.__sape is not None:
+            apellidos = apellidos + " " + self.__sape
+        return apellidos
+
     def getPape(self):
         return self.__pape
 

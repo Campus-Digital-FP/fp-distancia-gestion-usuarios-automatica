@@ -217,7 +217,10 @@ def crearAlumnoEnMoodle(moodle, alumno):
     Devuelve el id del alumno creado
     """
     print("crearAlumnoEnMoodle(...)")
-    cmd = "moosh -n user-create --password estudiante --email " + alumno.getEmail() + " --digest 2 --city Aragón --country ES --firstname \"" +  alumno.getNombre() + "\" --lastname \"" +  alumno.getPape() + " " + alumno.getSape() + "\" " + alumno.getDocumento().lower()
+    cmd = "moosh -n user-create --password estudiante --email " + alumno.getEmail() 
+        + " --digest 2 --city Aragón --country ES --firstname \"" +  alumno.getNombre() 
+        + "\" --lastname \"" +  alumno.getApellidos() + "\" " 
+        + alumno.getDocumento().lower()
 
     print("cmd: '", cmd, "'")
 
