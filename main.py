@@ -5,6 +5,9 @@ import time
 import urllib.parse
 import xml.dom.minidom
 import subprocess
+import os
+import sys
+import io
 from Config import *
 from Conexion import *
 from classes.Alumno import *
@@ -12,8 +15,44 @@ from classes.Centro import *
 from classes.Ciclo import *
 from classes.Modulo import *
 
+def get_moodles():
+    """
+    Devuelve un objeto como el siguiente:
+    #
+    """
+    urls = []
+    
+    data = os.popen(f"docker ps").read()
+    data_s = io.StringIO(data).read()
+    lines = data_s.splitlines()
+    containers = [
+        {
+            "url": line.split()[-1].replace("adistanciafparagones_moodle_1", ".adistanciafparagon.es"),
+            "container_name": line.split()[-1],
+            "server": server,
+        }
+        for line in lines
+        if line.split()[-1].endswith("moodle_1")
+    ]
+    urls.extend(containers)
+
+    return urls
+
+
+def run_moosh_command(moodle, command, capture=False):
+    command_string = "docker exec {moodle['container_name']} {command}"
+    if capture:
+        data = os.popen(command_string).read()
+        return data
+    if not capture:
+        os.system(command_string)
+
 def main():
     # 
+    moodles = get_moodles()
+    print("moodles")
+    print(moodles)
+    print("#########")
     alumnosFicheroJson = []
     alumnosMoodle = []
         
@@ -52,13 +91,19 @@ def main():
         else: # Error en la 1era llamada
             print("Error en la llamada al 1er web service")
     
-    # Iterating over alumnosFicheroJson for testing
+    # Iterating over alumnosMoodle
+    # for alumnoMoodle in alumnosMoodle:
+        # TODO
+    
+    # Iterating over alumnosFicheroJson
     for alumno in alumnosFicheroJson:
         # print("-", repr(alumno) )
         # los cursos de moodle tienen el formato shortname ${COD_CENTRE}-${siglasCiclo}-${COD_ENSENANZA}
+
+        # Creo en moodle los alumnos que estén en el json y no estén en moodle
         if not existeAlumnoEnMoodle(alumno):
             crearAlumnoEnMoodle(alumno)
-        
+        # TODO
 
         
     # print("Alumnos en fichero json", len(alumnosFicheroJson) )
@@ -158,8 +203,10 @@ def existeAlumnoEnMoodle(alumno):
 
     # moosh -n  user-list "username = 'estudiante1'"
     cmd = "moosh -n  user-list \"username = '"+ alumno.getDocumento() +"'\""
-    result = subprocess.run( cmd )
-    print(result)
+    
+    username = run_moosh_command(cmd, TRUE)
+    print("username", username)
+
     return True
     #
     # End of existeAlumnoEnMoodle
