@@ -205,6 +205,8 @@ def existeAlumnoEnMoodle(moodle, alumno):
     username = run_moosh_command(moodle, cmd, True)
     print("username", username)
 
+    if username == None
+        return False
     return True
     #
     # End of existeAlumnoEnMoodle
