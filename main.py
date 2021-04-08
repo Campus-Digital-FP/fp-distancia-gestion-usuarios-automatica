@@ -206,7 +206,7 @@ def existeAlumnoEnMoodle(moodle, alumno):
     print("username: '", username, "'")
     print("username type: " + type(username) )
 
-    if username is None
+    if username is None:
         return False
     return True
     #
