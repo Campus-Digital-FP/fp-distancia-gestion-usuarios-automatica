@@ -15,14 +15,14 @@ from classes.Centro import *
 from classes.Ciclo import *
 from classes.Modulo import *
 
-def get_moodles():
+def get_moodle(subdomain):
     """
     Devuelve un objeto como el siguiente:
     #
     """
     urls = []
     
-    data = os.popen(f"docker ps | grep test").read()
+    data = os.popen(f"docker ps | grep {subdomain}").read()
     data_s = io.StringIO(data).read()
     lines = data_s.splitlines()
     containers = [
@@ -48,7 +48,7 @@ def run_moosh_command(moodle, command, capture=False):
 
 def main():
     # 
-    moodles = get_moodles()
+    moodle = get_moodle("test")
     alumnosFicheroJson = []
     alumnosMoodle = []
         
@@ -97,8 +97,8 @@ def main():
         # los cursos de moodle tienen el formato shortname ${COD_CENTRE}-${siglasCiclo}-${COD_ENSENANZA}
 
         # Creo en moodle los alumnos que estén en el json y no estén en moodle
-        if not existeAlumnoEnMoodle(alumno):
-            crearAlumnoEnMoodle(alumno)
+        if not existeAlumnoEnMoodle(moodle, alumno):
+            crearAlumnoEnMoodle(moodle, alumno)
         # TODO
 
         
@@ -189,7 +189,7 @@ def procesaJsonEstudiantes(y, alumnosFicheroJson):
     # End of procesaJsonEstudiantes
     #
 
-def existeAlumnoEnMoodle(alumno):
+def existeAlumnoEnMoodle(moodle, alumno):
     """
     Comprueba si el alumno dado existe en moodle
     Devuelve true si existe
@@ -200,7 +200,7 @@ def existeAlumnoEnMoodle(alumno):
     # moosh -n  user-list "username = 'estudiante1'"
     cmd = "moosh -n  user-list \"username = '"+ alumno.getDocumento() +"'\""
     
-    username = run_moosh_command(cmd, True)
+    username = run_moosh_command(moodle, cmd, True)
     print("username", username)
 
     return True
@@ -208,7 +208,7 @@ def existeAlumnoEnMoodle(alumno):
     # End of existeAlumnoEnMoodle
     #
 
-def crearAlumnoEnMoodle(alumno):
+def crearAlumnoEnMoodle(moodle, alumno):
     """
     Crea un usuario en moodle con los datos del objeto alumno
     Devuelve el id del alumno creado
