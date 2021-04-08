@@ -50,7 +50,7 @@ def run_moosh_command(moodle, command, capture=False):
 
 def main():
     # 
-    moodle = get_moodle("test")
+    moodle = get_moodle("test")[0]
     alumnosFicheroJson = []
     alumnosMoodle = []
         
