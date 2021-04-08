@@ -120,7 +120,7 @@ def get_alumnos_moodle():
     Devuelve un objeto como el siguiente:
     #
     """
-    cmd = "moosh -n user-list \"username = '"+ alumno.getDocumento().lower() +"'\""
+    cmd = "moosh -n user-list"
     alumnosMoodle = run_moosh_command(moodle, cmd, True)
     print("alumnosMoodle: '",alumnosMoodle, "'" )
     """
