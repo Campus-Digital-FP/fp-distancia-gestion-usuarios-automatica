@@ -204,10 +204,11 @@ def existeAlumnoEnMoodle(moodle, alumno):
     
     username = run_moosh_command(moodle, cmd, True)
     print("username: '", username, "'")
-    print("username.strip(): '", username.strip(), "'" )
+    striped = username.strip()
+    print("username.strip(): '", striped, "'" )
     print("username type: ", type(username) )
 
-    if username is None:
+    if username == "":
         return False
     return True
     #
