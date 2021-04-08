@@ -200,7 +200,7 @@ def existeAlumnoEnMoodle(alumno):
     # moosh -n  user-list "username = 'estudiante1'"
     cmd = "moosh -n  user-list \"username = '"+ alumno.getDocumento() +"'\""
     
-    username = run_moosh_command(cmd, TRUE)
+    username = run_moosh_command(cmd, True)
     print("username", username)
 
     return True
