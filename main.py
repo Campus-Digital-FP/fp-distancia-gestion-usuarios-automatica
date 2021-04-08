@@ -114,7 +114,7 @@ def main():
     # End of main 
     # 
 
-def get_alumnos_moodle()
+def get_alumnos_moodle():
     print("get_alumnos_moodle(...)")
     """
     Devuelve un objeto como el siguiente:
