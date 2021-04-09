@@ -91,19 +91,27 @@ def main():
         else: # Error en la 1era llamada
             print("Error en la llamada al 1er web service")
     
-    # Añado a un listado los usuarios que no estén en el listado y estén en moodle
+    # 
     alumnos_borrar = [  ]
     for alumnoMoodle in alumnosMoodle:
         # TODO
         print("alumnoMoodle: ", alumnoMoodle )
-        if alumnoMoodle in alumnosFicheroJson:
-            print("El alumno de moodle SI está en SIGAD")
-        else:
-            print("El alumno de moodle NO está en SIGAD")
+        existe = False
+        for alumnoSIGAD in alumnosFicheroJson:
+            print("alumnoMoodle['username']: ", alumnoMoodle['username'], ", alumnoSIGAD.getDocumento: ", alumnoSIGAD.getDocumento())
+            if alumnoMoodle['username'] == alumnoSIGAD.getDocumento()):
+                print("El alumno de moodle SI existe en SIGAD")
+                existe = True
+                break
+        if not existe:
+            alumnos_borrar.append(alumnoMoodle)
+            
+    print("alumnos que estaban en moodle y no en SIGAD:")
+    print(alumnos_borrar)
     # envío por email el listado de usuarios que no están en el fichero y si en el moodle
     # TODO
 
-
+    """
     # Iterating over alumnosFicheroJson
     for alumno in alumnosFicheroJson:
         # print("-", repr(alumno) )
@@ -112,7 +120,7 @@ def main():
         if not existeAlumnoEnMoodle(moodle, alumno):
             crearAlumnoEnMoodle(moodle, alumno)
         # TODO: Revisar si está matriculado dónde corresponda y des/matricular
-
+    """
     #
     # End of main 
     # 
