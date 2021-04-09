@@ -131,8 +131,8 @@ def get_alumnos_moodle(moodle):
     alumno = [
         {
             "username": line.split()[0],
-            "userid": line.split()[1],
-            "email": line.split()[2],
+            "userid": line.split()[1].replace("(","").replace("),",""),
+            "email": line.split()[2].replace(",",""),
         }
         for line in lines
         # if line.split()[-1].endswith("moodle_1")
