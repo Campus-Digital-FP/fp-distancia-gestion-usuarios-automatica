@@ -131,7 +131,7 @@ def get_alumnos_moodle(moodle):
     alumno = [
         {
             "username": line.split("(")[0],
-            "userid": line.split("), ")[-1],
+            "userid": line.split("), ")[0],
             "email": line.split()[-1],
         }
         for line in lines
