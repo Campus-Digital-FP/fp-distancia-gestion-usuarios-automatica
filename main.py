@@ -57,11 +57,10 @@ def main():
         print("alumnoMoodle: ", alumnoMoodle)
         
     # Creo la conexión para la 1era llamada
-    """
-    miConexion = Conexion(url1, path1+"2020", usuario1, password1, method1)
+    conexion_1er_ws = Conexion(url1, path1+"2020", usuario1, password1, method1)
     # Hago la 1era llamada
     print( 'Making the call to the 1st web service:')
-    resp_data = miConexion.getJson()
+    resp_data = conexion_1er_ws.getJson()
 
     y = json.loads(resp_data);
     if y is not None:
@@ -76,8 +75,8 @@ def main():
             for x in range(1, 11):
                 time.sleep( 10 )
                 print( 'Iteration number ' + str(x))
-                miConexion = Conexion(url2, path2 + str(idSolicitud), usuario2, password2, method2)
-                resp_data = miConexion.getJson()
+                conexion_2ndo_ws = Conexion(url2, path2 + str(idSolicitud), usuario2, password2, method2)
+                resp_data = conexion_2ndo_ws.getJson()
                 y = json.loads(resp_data)
                 if y is not None:
                     codigo=y["codigo"]
@@ -97,6 +96,10 @@ def main():
     for alumnoMoodle in alumnosMoodle:
         # TODO
         print("alumnoMoodle: ", alumnoMoodle )
+        if alumnoMoodle in alumnosFicheroJson:
+            print("El alumno de moodle SI está en SIGAD")
+        else:
+            print("El alumno de moodle NO está en SIGAD")
     # envío por email el listado de usuarios que no están en el fichero y si en el moodle
     # TODO
 
@@ -108,8 +111,8 @@ def main():
         # Creo en moodle los alumnos que estén en el json y no estén en moodle
         if not existeAlumnoEnMoodle(moodle, alumno):
             crearAlumnoEnMoodle(moodle, alumno)
-        # TODO
-    """
+        # TODO: Revisar si está matriculado dónde corresponda y des/matricular
+
     #
     # End of main 
     # 
@@ -140,7 +143,6 @@ def get_alumnos_moodle(moodle):
     
 
     return alumnos
-
 
 def procesaJsonEstudiantes(y, alumnosFicheroJson):
     """
