@@ -131,10 +131,11 @@ def get_alumnos_moodle(moodle):
     alumno = [
         {
             "username": line.split(",")[-1],
+            "userid": line.split(")")[-1],
             "email": line.split()[-1],
         }
         for line in lines
-        if line.split(", ")[-1]
+        # if line.split()[-1].endswith("moodle_1")
     ]
     alumnos.extend(alumno)
     
