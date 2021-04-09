@@ -120,7 +120,7 @@ def get_alumnos_moodle(moodle):
     Devuelve un objeto como el siguiente:
     #
     """
-    cmd = "moosh -n user-list -n 50000" #listado de usuarios limitado a 50.000 # username (id), email,
+    cmd = "moosh -n user-list -n 50" #listado de usuarios limitado a 50.000 # username (id), email,
     alumnosMoodle = run_moosh_command(moodle, cmd, True)
     print("alumnosMoodle: '",alumnosMoodle, "'" )
     
@@ -130,7 +130,7 @@ def get_alumnos_moodle(moodle):
     lines = data_s.splitlines()
     alumno = [
         {
-            "username": line.split()[-1],
+            "username": line.split(",")[-1],
             "email": line.split()[-1],
         }
         for line in lines
