@@ -89,15 +89,15 @@ def main():
         else: # Error en la 1era llamada
             print("Error en la llamada al 1er web service")
     
-    # Añado a un listado los usuarios que no estén en el listado y stén en moodle
-    # for alumnoMoodle in alumnosMoodle:
+    # Añado a un listado los usuarios que no estén en el listado y estén en moodle
+    alumnos_borrar = [  ]
+    for alumnoMoodle in alumnosMoodle:
         # TODO
     # envío por email el listado de usuarios que no están en el fichero y si en el moodle
     # TODO
 
 
     # Iterating over alumnosFicheroJson
-    """
     for alumno in alumnosFicheroJson:
         # print("-", repr(alumno) )
         
@@ -105,10 +105,6 @@ def main():
         if not existeAlumnoEnMoodle(moodle, alumno):
             crearAlumnoEnMoodle(moodle, alumno)
         # TODO
-    """
-        
-    # print("Alumnos en fichero json", len(alumnosFicheroJson) )
-    #
 
     #
     # End of main 
@@ -120,27 +116,27 @@ def get_alumnos_moodle(moodle):
     Devuelve un objeto como el siguiente:
     #
     """
-    cmd = "moosh -n user-list"
+    cmd = "moosh -n user-list -n 50000" #listado de usuarios limitado a 50.000 # username (id), email,
     alumnosMoodle = run_moosh_command(moodle, cmd, True)
     print("alumnosMoodle: '",alumnosMoodle, "'" )
-    """
+    
     alumnos = []
     
-    data = os.popen(f"docker ps | grep {subdomain}").read()
-    data_s = io.StringIO(data).read()
+    
+    data_s = io.StringIO(alumnosMoodle).read()
     lines = data_s.splitlines()
     container = [
         {
-            "url": line.split()[-1].replace("adistanciafparagones_moodle_1", ".adistanciafparagon.es"),
-            "container_name": line.split()[-1],
+            "username": line.split()[-1],
+            "email": line.split()[-1],
         }
         for line in lines
         if line.split()[-1].endswith("moodle_1")
     ]
     alumnos.extend(containers)
-    """
+    
 
-    return None
+    return alumnos
 
 
 def procesaJsonEstudiantes(y, alumnosFicheroJson):
