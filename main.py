@@ -53,8 +53,11 @@ def main():
     moodle = get_moodle("test")[0]
     alumnosFicheroJson = []
     alumnosMoodle = get_alumnos_moodle(moodle) # Alumnos que figuran en moodle antes de ejecutar el script
+    for alumnoMoodle in alumnosMoodle:
+        print("alumnoMoodle: ", alumnoMoodle)
         
     # Creo la conexión para la 1era llamada
+    """
     miConexion = Conexion(url1, path1+"2020", usuario1, password1, method1)
     # Hago la 1era llamada
     print( 'Making the call to the 1st web service:')
@@ -106,7 +109,7 @@ def main():
         if not existeAlumnoEnMoodle(moodle, alumno):
             crearAlumnoEnMoodle(moodle, alumno)
         # TODO
-
+    """
     #
     # End of main 
     # 
