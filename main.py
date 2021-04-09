@@ -132,7 +132,7 @@ def get_alumnos_moodle(moodle):
         {
             "username": line.split("(")[0],
             "userid": line.split("), ")[-1],
-            "email": line.split("")[-1],
+            "email": line.split()[-1],
         }
         for line in lines
         # if line.split()[-1].endswith("moodle_1")
