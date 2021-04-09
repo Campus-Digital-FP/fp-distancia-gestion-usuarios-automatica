@@ -33,7 +33,7 @@ def get_moodle(subdomain):
         for line in lines
         if line.split()[-1].endswith("moodle_1")
     ]
-    # urls.extend(containers)
+    # urls.extend(container)
 
     return container
 
@@ -121,12 +121,11 @@ def get_alumnos_moodle(moodle):
     alumnosMoodle = run_moosh_command(moodle, cmd, True)
     print("alumnosMoodle: '",alumnosMoodle, "'" )
     
-    alumnos = []
-    
+    alumnos = []    
     
     data_s = io.StringIO(alumnosMoodle).read()
     lines = data_s.splitlines()
-    container = [
+    alumno = [
         {
             "username": line.split()[-1],
             "email": line.split()[-1],
@@ -134,7 +133,7 @@ def get_alumnos_moodle(moodle):
         for line in lines
         if line.split()[-1].endswith("moodle_1")
     ]
-    alumnos.extend(containers)
+    alumnos.extend(alumno)
     
 
     return alumnos
