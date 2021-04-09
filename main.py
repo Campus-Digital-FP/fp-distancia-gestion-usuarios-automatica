@@ -117,12 +117,11 @@ def main():
 def get_alumnos_moodle(moodle):
     print("get_alumnos_moodle(...)")
     """
-    Devuelve un objeto como el siguiente:
+    Devuelve una lista de usuarios que actualmente están en moodle:
     #
     """
     cmd = "moosh -n user-list -n 50000" #listado de usuarios limitado a 50.000 # username (id), email,
     alumnosMoodle = run_moosh_command(moodle, cmd, True)
-    print("alumnosMoodle: '",alumnosMoodle, "'" )
     
     alumnos = []    
     
