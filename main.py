@@ -91,23 +91,22 @@ def main():
         else: # Error en la 1era llamada
             print("Error en la llamada al 1er web service")
     
-    # 
-    alumnos_borrar = [  ]
+    # Localizo los alumnos que estén en moodle y no en SIGAD
+    alumnos_en_moodle_pero_no_SIGAD = [  ]
     for alumnoMoodle in alumnosMoodle:
-        # TODO
-        print("alumnoMoodle: ", alumnoMoodle )
         existe = False
+        # comprobamos si existe por dni/nie/...
         for alumnoSIGAD in alumnosFicheroJson:
-            print("alumnoMoodle['username']: ", alumnoMoodle['username'], ", alumnoSIGAD.getDocumento: ", alumnoSIGAD.getDocumento() )
             if alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
                 print("El alumno de moodle SI existe en SIGAD")
                 existe = True
                 break
         if not existe:
-            alumnos_borrar.append(alumnoMoodle)
+            alumnos_en_moodle_pero_no_SIGAD.append(alumnoMoodle)
             
-    print("alumnos que estaban en moodle y no en SIGAD:")
-    print(alumnos_borrar)
+    print("alumnos que estan en moodle y no en SIGAD:")
+    for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
+        print("alumnoMoodle: ", alumnoMoodle)
     # envío por email el listado de usuarios que no están en el fichero y si en el moodle
     # TODO
 
