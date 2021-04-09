@@ -53,8 +53,6 @@ def main():
     moodle = get_moodle("test")[0]
     alumnosFicheroJson = []
     alumnosMoodle = get_alumnos_moodle(moodle) # Alumnos que figuran en moodle antes de ejecutar el script
-    for alumnoMoodle in alumnosMoodle:
-        print("alumnoMoodle: ", alumnoMoodle)
         
     # Creo la conexión para la 1era llamada
     conexion_1er_ws = Conexion(url1, path1+"2020", usuario1, password1, method1)
@@ -98,7 +96,6 @@ def main():
         # comprobamos si existe por dni/nie/...
         for alumnoSIGAD in alumnosFicheroJson:
             if alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
-                print("El alumno de moodle SI existe en SIGAD")
                 existe = True
                 break
         if not existe:
@@ -107,7 +104,24 @@ def main():
     print("alumnos que estan en moodle y no en SIGAD:")
     for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
         print("alumnoMoodle: ", alumnoMoodle)
-    # envío por email el listado de usuarios que no están en el fichero y si en el moodle
+
+    # Recorro los alumnos que están en moodle y no en SIGAD y 
+    # miro si el email que está en moodle
+    alumnos_a_borrar = [ ]
+    for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
+        existe = False
+        # comprobamos si existe por email
+        for alumnoSIGAD in alumnosFicheroJson:
+            if alumnoMoodle['email'].lower() == alumnoSIGAD.getEmail().lower():
+                existe = True
+                # TODO: A este alumno de moodle habrá que ponerle el nuevo id que tenga en SIGAD
+                break
+        if not existe:
+            alumnos_a_borrar.append(alumnoMoodle)
+
+    # envío por email el listado de usuarios borrados
+    # TODO
+    # envío por email el listado de usuarios actualizados
     # TODO
 
     """
