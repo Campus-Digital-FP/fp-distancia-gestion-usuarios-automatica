@@ -98,7 +98,7 @@ def main():
         print("alumnoMoodle: ", alumnoMoodle )
         existe = False
         for alumnoSIGAD in alumnosFicheroJson:
-            print("alumnoMoodle['username']: ", alumnoMoodle['username'], ", alumnoSIGAD.getDocumento: ", alumnoSIGAD.getDocumento())
+            print("alumnoMoodle['username']: ", alumnoMoodle['username'], ", alumnoSIGAD.getDocumento: ", alumnoSIGAD.getDocumento() )
             if alumnoMoodle['username'] == alumnoSIGAD.getDocumento()):
                 print("El alumno de moodle SI existe en SIGAD")
                 existe = True
