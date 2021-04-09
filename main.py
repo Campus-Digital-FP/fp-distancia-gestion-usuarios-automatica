@@ -93,6 +93,7 @@ def main():
     alumnos_borrar = [  ]
     for alumnoMoodle in alumnosMoodle:
         # TODO
+        print("alumnoMoodle: ", alumnoMoodle )
     # envío por email el listado de usuarios que no están en el fichero y si en el moodle
     # TODO
 
