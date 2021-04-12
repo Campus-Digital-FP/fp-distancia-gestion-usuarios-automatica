@@ -106,7 +106,7 @@ def main():
         print("alumnoMoodle: ", alumnoMoodle)
 
     # Recorro los alumnos que están en moodle y no en SIGAD y 
-    # miro si el email que está en moodle
+    # miro si el email del que no está en moodle lo tiene alguien en SIGAD
     alumnos_a_borrar = [ ]
     for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
         existe = False
@@ -115,14 +115,19 @@ def main():
             if alumnoMoodle['email'].lower() == alumnoSIGAD.getEmail().lower():
                 existe = True
                 # TODO: A este alumno de moodle habrá que ponerle el nuevo id que tenga en SIGAD
+                print("- Alumno a actualizar su id por coincidencia de email: ", repr(alumnoMoodle) )
                 break
         if not existe:
             alumnos_a_borrar.append(alumnoMoodle)
 
     # envío por email el listado de usuarios borrados
     # TODO
+    print("Alumnos a eliminar de Moodle")
+    for alumnoSIGAD in alumnos_a_borrar:
+        print("- ", repr(alumnoSIGAD) )
     # envío por email el listado de usuarios actualizados
     # TODO
+    print("Alumnos a los qu")
 
     """
     # Iterating over alumnosFicheroJson

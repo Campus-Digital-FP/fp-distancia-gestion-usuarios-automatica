@@ -5,8 +5,8 @@ class Alumno:
             self, idAlumno, idTipoDocumento, documento, nombre, pape,
             sape, email ):
         self.__idAlumno = idAlumno
-        self.__idTipoDocumento = idTipoDocumento
-        self.__documento = documento
+        self.__idTipoDocumento = idTipoDocumento # tipo de documento
+        self.__documento = documento #numero de DNI, NIE,...
         self.__nombre = nombre
         self.__pape = pape
         self.__sape = sape
