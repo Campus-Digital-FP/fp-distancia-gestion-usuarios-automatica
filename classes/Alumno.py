@@ -39,6 +39,9 @@ class Alumno:
     def getEmail(self):
         return self.__email
 
+    def getCentros(self):
+        return self.__centros
+
     def __repr__(self):
         cadena =  "idAlumno: " + str(self.__idAlumno) \
             + ", idTipoDocumento: " + str(self.__idTipoDocumento) \
