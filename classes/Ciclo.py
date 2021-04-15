@@ -13,6 +13,12 @@ class Ciclo:
             self.__modulos = []
         self.__modulos.append(modulo)
 
+    def get_siglas_ciclo(self):
+        return self.__siglasCiclo
+
+    def getModulos(self):
+        return self.__modulos
+
     def __repr__(self):
         cadena = "idFicha: " +  str(self.__idFicha) \
             + ", codigoCiclo: " + str(self.__codigoCiclo) \

@@ -11,6 +11,12 @@ class Centro:
             self.__ciclos = []
         self.__ciclos.append(ciclo)
 
+    def get_codigo_centro(self):
+        return self.__codigoCentro
+
+    def getCiclos(self):
+        return self.__ciclos
+
     def __repr__(self):
         cadena =  "codigoCentro: " + self.__codigoCentro \
             + ", centro: " + self.__centro

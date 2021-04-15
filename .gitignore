@@ -2,4 +2,5 @@
 Config.py
 .vscode/*
 __pycache__/*
+logs/*
 classes/__pycache__/*
