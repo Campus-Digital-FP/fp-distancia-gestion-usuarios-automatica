@@ -22,3 +22,9 @@ SMTP_HOSTS=""
 SMTP_PORT=""
 SMTP_USER=""
 SMTP_PASSWORD=""
+
+# database
+DB_USER=""
+DB_PASS=""
+DB_HOST=""
+DB_NAME=""
