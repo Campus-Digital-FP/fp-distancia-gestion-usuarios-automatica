@@ -113,11 +113,10 @@ def main():
     
     for alumnoMoodle in alumnos_a_borrar:
         print("- ", repr(alumnoMoodle) )
-        if alumnoMoodle['userid'] not in usuarios_moodle_no_borrables: # TODO: it's not working
+        if int(alumnoMoodle['userid']) not in usuarios_moodle_no_borrables: # TODO: it's not working
             delete_alumno_moodle(alumnoMoodle, moodle)
         else:
             print("Alumno configurado como NO borrable")
-    
     ########################
     # Desmatriculo de Moodle a aquellos alumnos que SIGAD me dice ya no deberían estar matriculados en un determinado curso
     # Obtengo y recorro los usuarios de moodle. 
@@ -131,7 +130,7 @@ def main():
     for alumno_moodle in alumnos_moodle:
         userid = alumno_moodle['userid']
         # no recorro los no borrables
-        if userid in usuarios_moodle_no_borrables: # TODO: no está funcionando
+        if int(userid) in usuarios_moodle_no_borrables: 
             continue
         username = alumno_moodle['username']
 
@@ -157,6 +156,10 @@ def main():
                 print("course_codes[0]:", course_codes[0])
                 print("course_codes[1]:", course_codes[1])
                 print("course_codes[2]:", course_codes[2])
+                # si el alumno no está matriculado en el curso de moodle no hacer nada mas con él
+                # si el alumno está matriculado en el curso de moodle entonces
+                #  - si SIGAD también dice que debe estar matriculado entonces no hacer nada
+                #  - si SIGAD dice que en ese curso no está matriculado entonces darle de baja
                 for alumno in alumnosFicheroJson:
                     en_sigad_esta_matriculado = False
                     if alumno.getDocumento().lower() == username.lower(): #he encontrado al alumno en SIGAD
@@ -176,13 +179,13 @@ def main():
                                         modulos = ciclo.getModulos()
                                         print("***Mirando módulos del alumno")
                                         for modulo in modulos:
-                                            print("course_codes[2]:'", course_codes[2],"'" )
-                                            print("modulo.get_id_materia():'", modulo.get_id_materia(),"'" )
+                                            print("course_codes[2]:'", course_codes[2],"'", sep="" )
+                                            print("modulo.get_id_materia():'", modulo.get_id_materia(),"'", sep="" )
                                             print("ID of course_codes[2] =", hex(id(course_codes[2])))
                                             print("ID of modulo.get_id_materia() =", hex(id(modulo.get_id_materia())))
                                             if en_sigad_esta_matriculado:
                                                 break
-                                            if course_codes[2] == modulo.get_id_materia(): #he llegado al módulo
+                                            if int(course_codes[2]) == int(modulo.get_id_materia()): #he llegado al módulo
                                                 en_sigad_esta_matriculado = True
                                                 print("El alumno si está matriculado en SIGAD en ese curso")
                                     else:
@@ -192,14 +195,7 @@ def main():
                         if not en_sigad_esta_matriculado:
                             print("En SIGAD el alumno", username, "NO está matriculado en", course_shortname, "se procede a desmatricular de moodle")
                             desmatricula_alumno_en_curso(moodle, userid, courseid)
-                            assert(False)
                         break # una vez he procesado al alumno no tiene sentido seguir mirando los demás alumnos de SIGAD
-            # si el alumno no está matriculado en el curso de moodle no hacer nada mas con él
-            # si el alumno está matriculado en el curso de moodle entonces
-            #  - si SIGAD también dice que debe estar matriculado entonces no hacer nada
-            #  - si SIGAD dice que en ese curso no está matriculado entonces darle de baja
-    
-    assert(False)
 
     ########################
     # Proceso el fichero JSON (foto de SIGAD)
