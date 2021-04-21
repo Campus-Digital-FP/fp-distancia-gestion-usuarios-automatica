@@ -20,11 +20,12 @@ from classes.Modulo import *
 
 def main():
     #
+    mensajes_email = []
     usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] # ids de users creados en deploy que no hay que borrar
     # 
     moodle = get_moodle(SUBDOMAIN)[0]
-    alumnosFicheroJson = []
-    alumnosMoodle = get_alumnos_moodle_no_borrados(moodle) # Alumnos que figuran en moodle antes de ejecutar el script
+    alumnos_sigad = []
+    alumnos_moodle = get_alumnos_moodle_no_borrados(moodle) # Alumnos que figuran en moodle antes de ejecutar el script
     
     #########################################
     # Obtengo curso académico que debo usar
@@ -61,7 +62,7 @@ def main():
                     print("codigo: " + str(codigo) + ", mensaje: " + str(mensaje))
                     guarda_fichero(get_date_time() + ".ws2.log", str(resp_data) )
                     if codigo == 0: # éxito de la 2nda llamada
-                        procesaJsonEstudiantes(y, alumnosFicheroJson)
+                        procesaJsonEstudiantes(y, alumnos_sigad)
                         break
                     else: # Error  en la 2ª llamada
                         print("Fichero aún no listo. Código: " + str(codigo) 
@@ -73,10 +74,10 @@ def main():
     # Localizo los alumnos (los profesores no) que estén en moodle y no en SIGAD (en base a su dni/nie/...)
     ########################
     alumnos_en_moodle_pero_no_SIGAD = [  ]
-    for alumnoMoodle in alumnosMoodle:
+    for alumnoMoodle in alumnos_moodle:
         existe = False
         # comprobamos si existe por dni/nie/...
-        for alumnoSIGAD in alumnosFicheroJson:
+        for alumnoSIGAD in alumnos_sigad:
             if alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
                 existe = True
                 break
@@ -93,28 +94,38 @@ def main():
     # - si no hay nadie con ese email considero que es una baja y lo botto
     ########################
     print("*** Alumnos que habría que actualizar su id:")
+    mensajes_email.append( get_date_time() )
+    mensajes_email.append("***** Alumnos actualizados su id:")
     alumnos_a_borrar = [ ] # los que no haya que actualizar son para borrar, irán aquí
     for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
         existe = False
         # comprobamos si existe por email
-        for alumnoSIGAD in alumnosFicheroJson:
+        for alumnoSIGAD in alumnos_sigad:
             if alumnoSIGAD.getEmail() is not None \
                     and alumnoMoodle['email'].lower() == alumnoSIGAD.getEmail().lower():
                 existe = True
                 # TODO: A este alumno de moodle habrá que ponerle el nuevo id que tenga en SIGAD
                 print("- Alumno a actualizar su login por coincidencia de email: ", repr(alumnoMoodle) )
                 print("habría que ponerle de login ", alumnoSIGAD.getDocumento() )
+                userid = alumnoMoodle['userid']
+                username_nuevo = alumnoSIGAD.getDocumento().lower()
+                update_moodle_username(moodle, userid, username_nuevo)
+                mensajes_email.append("- Al alumno que tenía usuario de acceso " + alumnoMoodle['username'] + \
+                        " se le ha cambiado a " + alumnoSIGAD.getDocumento() + \
+                        "(" + alumnoSIGAD.getEmail().lower() + ").")
                 break
         if not existe:
             alumnos_a_borrar.append(alumnoMoodle)
 
     
     print("*** Alumnos a eliminar de Moodle")
-    
+    mensajes_email.append( get_date_time() )
+    mensajes_email.append("***** Alumnos eliminados:")
     for alumnoMoodle in alumnos_a_borrar:
         print("- ", repr(alumnoMoodle) )
-        if int(alumnoMoodle['userid']) not in usuarios_moodle_no_borrables: # TODO: it's not working
+        if int(alumnoMoodle['userid']) not in usuarios_moodle_no_borrables: 
             delete_alumno_moodle(alumnoMoodle, moodle)
+            mensajes_email.append("- " + alumnoMoodle)
         else:
             print("Alumno configurado como NO borrable")
     ########################
@@ -126,84 +137,70 @@ def main():
     ########################
     alumnos_moodle = get_alumnos_moodle_no_borrados(moodle) 
     cursos_moodle = get_cursos(moodle)
-
+    mensajes_email.append( get_date_time() )
+    mensajes_email.append("***** Alumnos desmatriculados:")
     for alumno_moodle in alumnos_moodle:
         userid = alumno_moodle['userid']
         # no recorro los no borrables
         if int(userid) in usuarios_moodle_no_borrables: 
             continue
         username = alumno_moodle['username']
-
-        for curso in cursos_moodle:
+        # Obtengo los cursos en que este alumno moodle está matriculado en moodle
+        cursos_matriculado = get_cursos_en_que_esta_matriculado(moodle, userid)
+        # recorro los cursos en que el usuario de moodle está matriculado y miro si el usuario de sigad está matriculado en el curso o no
+        for curso in cursos_matriculado:
             courseid = curso['courseid']
             course_shortname = curso['shortname']
-            print("Evaluando si el alumno", username, "está ahora matriculado en Moodle en el curso", course_shortname)
-            command = '''\
-            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
-                SELECT u.id, u.username, u.email, c.id, c.shortname 
-                FROM mdl_user u 
-                INNER JOIN mdl_user_enrolments ue ON ue.userid = u.id 
-                INNER JOIN mdl_enrol e ON e.id = ue.enrolid 
-                INNER JOIN mdl_course c ON e.courseid = c.id
-                WHERE c.id={courseid} AND u.id = {userid}
-            \"
-            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, courseid = courseid, userid = userid )
-            out = run_command( command , True).rstrip()
-            print("out: '", out, "'")
-            if out != "":
-                print("Actualmente el alumno", username, "está ahora matriculado en moodle en el curso", course_shortname, ". Vamos a comprobar si en SIGAD también está")
-                course_codes = course_shortname.split("-") # 0 centreid 1 siglas ciclo 2 codigo materia
-                print("course_codes[0]:", course_codes[0])
-                print("course_codes[1]:", course_codes[1])
-                print("course_codes[2]:", course_codes[2])
-                # si el alumno no está matriculado en el curso de moodle no hacer nada mas con él
-                # si el alumno está matriculado en el curso de moodle entonces
-                #  - si SIGAD también dice que debe estar matriculado entonces no hacer nada
-                #  - si SIGAD dice que en ese curso no está matriculado entonces darle de baja
-                for alumno in alumnosFicheroJson:
-                    en_sigad_esta_matriculado = False
-                    if alumno.getDocumento().lower() == username.lower(): #he encontrado al alumno en SIGAD
-                        print("-", repr(alumno) )
-                        centros = alumno.getCentros()
-                        print("*Mirando centros del alumno")
-                        for centro in centros:
-                            if en_sigad_esta_matriculado:
-                                break
-                            if course_codes[0] == centro.get_codigo_centro(): #sigo profundizando
-                                ciclos = centro.getCiclos()
-                                print("**Mirando ciclos del alumno")
-                                for ciclo in ciclos:
-                                    if en_sigad_esta_matriculado:
-                                        break;
-                                    if course_codes[1] == ciclo.get_siglas_ciclo(): #sigo profundizando
-                                        modulos = ciclo.getModulos()
-                                        print("***Mirando módulos del alumno")
-                                        for modulo in modulos:
-                                            print("course_codes[2]:'", course_codes[2],"'", sep="" )
-                                            print("modulo.get_id_materia():'", modulo.get_id_materia(),"'", sep="" )
-                                            print("ID of course_codes[2] =", hex(id(course_codes[2])))
-                                            print("ID of modulo.get_id_materia() =", hex(id(modulo.get_id_materia())))
-                                            if en_sigad_esta_matriculado:
-                                                break
-                                            if int(course_codes[2]) == int(modulo.get_id_materia()): #he llegado al módulo
-                                                en_sigad_esta_matriculado = True
-                                                print("El alumno si está matriculado en SIGAD en ese curso")
-                                    else:
-                                        continue;
-                            else:
-                                continue
-                        if not en_sigad_esta_matriculado:
-                            print("En SIGAD el alumno", username, "NO está matriculado en", course_shortname, "se procede a desmatricular de moodle")
-                            desmatricula_alumno_en_curso(moodle, userid, courseid)
-                        break # una vez he procesado al alumno no tiene sentido seguir mirando los demás alumnos de SIGAD
-
+            course_codes = course_shortname.split("-") # 0 centreid 1 siglas ciclo 2 codigo materia
+            for alumno in alumnos_sigad:
+                
+                en_sigad_esta_matriculado = False
+                if alumno.getDocumento().lower() == username.lower(): # he encontrado al alumno en SIGAD
+                    print("-", repr(alumno) )
+                    print("Actualmente el alumno", username, "está ahora matriculado en moodle en el curso", course_shortname, ". Vamos a comprobar si en SIGAD también está")
+                    
+                    centros = alumno.getCentros()
+                    print("*Mirando centros del alumno")
+                    for centro in centros:
+                        if en_sigad_esta_matriculado:
+                            break
+                        if course_codes[0] == centro.get_codigo_centro(): #sigo profundizando
+                            ciclos = centro.getCiclos()
+                            print("**Mirando ciclos del alumno")
+                            for ciclo in ciclos:
+                                if en_sigad_esta_matriculado:
+                                    break;
+                                if course_codes[1] == ciclo.get_siglas_ciclo(): #sigo profundizando
+                                    modulos = ciclo.getModulos()
+                                    print("***Mirando módulos del alumno")
+                                    for modulo in modulos:
+                                        if en_sigad_esta_matriculado:
+                                            break
+                                        if int(course_codes[2]) == modulo.get_id_materia(): #he llegado al módulo
+                                            en_sigad_esta_matriculado = True
+                                            print("En SIGAD el alumno", username, "SI está matriculado en", course_shortname, "se le mantiene matriculado en moodle")
+                                else:
+                                    continue;
+                        else:
+                            continue
+                    if not en_sigad_esta_matriculado:
+                        print("En SIGAD el alumno", username, "NO está matriculado en", course_shortname, "se procede a desmatricular de moodle")
+                        desmatricula_alumno_en_curso(moodle, userid, courseid)
+                        mensajes_email.append("- " + username + "  desmatriculado de " + course_shortname)
+                    break # una vez he procesado al alumno no tiene sentido seguir mirando los demás alumnos de SIGAD
     ########################
     # Proceso el fichero JSON (foto de SIGAD)
     # - si un alumno del fichero no existe en moodle lo creo
     # - matriculo a un alumno en los cursos que tenga asignados en SIGAD
     ########################
+    mensajes_email.append( get_date_time() )
+    mensajes_email.append("***** Alumnos creados y matriculados:")
     usuarios_no_creables = [ ]
-    for alumno in alumnosFicheroJson:
+    # Creo diccionario de id_cursoshortname para evitar usar get_id_de_curso_by_shortname en cada iteración
+    diccionario_cursos = {curso['shortname'] : curso['courseid'] for curso in cursos_moodle}
+    diccionario_alumnos = {alumno['username'] : alumno['userid'] for alumno in alumnos_moodle}
+    #
+    for alumno in alumnos_sigad:
         print("*** Procesando alumno de fichero JSNON ***")
         print("-", repr(alumno) )
         id_alumno = ""
@@ -211,11 +208,13 @@ def main():
         if not existeAlumnoEnMoodle(moodle, alumno):
             try:
                 id_alumno = crearAlumnoEnMoodle(moodle, alumno)
+                mensajes_email.append("- Alumno " + alumno.getDocumento() + " creado.")
             except ValueError as e:
                 usuarios_no_creables.append(alumno)
                 continue
         else:
-            id_alumno = get_id_alumno_by_dni(moodle, alumno)
+            #id_alumno = get_id_alumno_by_dni(moodle, alumno)
+            id_alumno = diccionario_alumnos[ alumno.getDocumento().lower().rstrip() ]
         
         # Revisar si está matriculado dónde corresponda y matricular
         for centro in alumno.getCentros():
@@ -226,26 +225,90 @@ def main():
                     id_materia = modulo.get_id_materia()
 
                     shortname_curso = str(codigo_centro) + "-" + str(siglas_ciclo) + "-" + str(id_materia)
-                    id_curso = get_id_de_curso_by_shortname(moodle, shortname_curso)
+                    #id_curso = get_id_de_curso_by_shortname(moodle, shortname_curso)
+                    id_curso = ""
+                    try:
+                        id_curso = diccionario_cursos[shortname_curso]
+                    except KeyError:
+                        id_curso = ""
+
                     if id_curso == "": # el curso no existe
-                        print("El curso ", shortname_curso , " no existe.")
+                        print("El curso ", str(shortname_curso) , " no existe.", sep="")
+                        mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " NO puede matricularse en "+ shortname_curso + "por que el curso NO existe.")
                     elif not is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
                         matricula_alumno_en_curso(moodle, id_alumno, id_curso)
+                        mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " matriculado en "+ shortname_curso + ".")
                     else:
-                        print("El alumno (",id_alumno,") ya estaba matriculado en ", shortname_curso)
+                        print("El alumno (",id_alumno,") ya estaba matriculado en ", shortname_curso, sep="")
     # Listo alumnos que no se han podido crear
-    # TODO: enviar por email
+    mensajes_email.append( get_date_time() )
+    mensajes_email.append("***** Alumnos que no se han podido crear:")
     print("Alumnos de SIGAD que no se han podido crear en Moodle: ")
     for alumno in usuarios_no_creables:
         print( "- ", repr(alumno) )
+        mensajes_email.append("- " + alumno.getDocumento() )
     ########################
     # Envío email resumen de lo hecho por email a responsables
     ########################
-    # TODO # send_email("fp@catedu.es", "asunto", "Hello world!")
+    texto = """
+        {}
+        """.format("\n".join(mensajes_email[1:]))
+    print(texto)
+    send_email("fp@catedu.es", "Informe automatizado gestión automática usuarios moodle", texto)
 
     #
     # End of main 
     # 
+
+def get_cursos_en_que_esta_matriculado(moodle, id_usuario):
+    """
+    Devuelve una lista de cursos en los que el alumno está matriculado
+    """
+    print("get_cursos_en_que_esta_matriculado(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                SELECT c.id, c.shortname 
+                FROM mdl_user u 
+                INNER JOIN mdl_user_enrolments ue ON ue.userid = u.id 
+                INNER JOIN mdl_enrol e ON e.id = ue.enrolid 
+                INNER JOIN mdl_course c ON e.courseid = c.id
+                WHERE u.id = {id_usuario}
+            \" | tail -n +2
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_usuario = id_usuario )
+    cursos_en_los_que_esta_matriculado = run_command( command , True).rstrip()
+    
+    cursos = []    
+    
+    data_s = io.StringIO(cursos_en_los_que_esta_matriculado).read()
+    lines = data_s.splitlines()
+    curso = [
+        {
+            "courseid": line.split()[0],
+            "shortname": line.split()[1],
+        }
+        for line in lines
+        # if line.split()[-1].endswith("moodle_1")
+    ]
+    cursos.extend(curso)
+    
+
+    return cursos
+
+def update_moodle_username(moodle, userid, username_nuevo):
+    """
+    En el moodle dado actualiza el usuario userid a un nuevo username
+    """
+    print("update_moodle_username(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                update mdl_user  
+                set username = '{username_nuevo}'
+                WHERE id = {userid}
+            \"
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, username_nuevo = username_nuevo, userid = userid )
+    run_command( command, False )
 
 def get_date_time():
     """
@@ -253,7 +316,7 @@ def get_date_time():
     info from  https://www.programiz.com/python-programming/datetime/strftime
     """
     now = datetime.now() # current date and time
-    return now.strftime("%Y%m%d%H%M%S")
+    return now.strftime("%Y%m%d %H%M%S")
 
 def guarda_fichero(nombre_fichero, contenido):
     """
@@ -392,11 +455,11 @@ def get_id_de_curso_by_shortname(moodle, shortname):
     """
     print("get_id_de_curso_by_shortname(...)")
     cmd = "moosh -n course-list \"shortname = '" + shortname + "'\" | tail -n 1 | cut -d \",\" -f1 | sed 's/\"//' | sed 's/\"//' " 
-    course_info = run_moosh_command(moodle, cmd, True).rstrip()
+    id_course = run_moosh_command(moodle, cmd, True).rstrip()
 
-    print("course_info: ", course_info)
+    print("id_course: ", id_course)
 
-    return course_info
+    return id_course
 
 def get_alumnos_moodle_no_borrados(moodle):
     print("get_alumnos_moodle_no_borrados(...)")
@@ -405,11 +468,11 @@ def get_alumnos_moodle_no_borrados(moodle):
     #
     """
     cmd = "moosh -n user-list -n 50000 \"deleted = 0 and username not like 'prof%' \" " #listado de usuarios limitado a 50.000 # username (id), email,
-    alumnosMoodle = run_moosh_command(moodle, cmd, True)
+    alumnos_moodle = run_moosh_command(moodle, cmd, True)
     
     alumnos = []    
     
-    data_s = io.StringIO(alumnosMoodle).read()
+    data_s = io.StringIO(alumnos_moodle).read()
     lines = data_s.splitlines()
     alumno = [
         {
@@ -426,7 +489,7 @@ def get_alumnos_moodle_no_borrados(moodle):
     return alumnos
 
 def get_cursos(moodle):
-    print("get_alumnos_moodle_no_borrados(...)")
+    print("get_cursos(...)")
     """
     Devuelve una lista de los cursos que existen en moodle
     #
@@ -454,10 +517,10 @@ def get_cursos(moodle):
 
     return cursos    
 
-def procesaJsonEstudiantes(y, alumnosFicheroJson):
+def procesaJsonEstudiantes(y, alumnos_sigad):
     """
     Procesa el fichero JSON obteniendo los alumnos y que estudian y los
-    añade a alumnosFicheroJson
+    añade a alumnos_sigad
     """
     estudiantes=y["estudiantes"]
     # print( "type(estudiantes): ", type(estudiantes) ) # str
@@ -528,8 +591,8 @@ def procesaJsonEstudiantes(y, alumnosFicheroJson):
                 miCentro.addCiclo(miCiclo)
             # Add miCentro to miAlumno
             miAlumno.addCentro(miCentro)
-        # Add miAlumno to alumnosFicheroJson
-        alumnosFicheroJson.append(miAlumno)
+        # Add miAlumno to alumnos_sigad
+        alumnos_sigad.append(miAlumno)
     #
     # End of procesaJsonEstudiantes
     #
