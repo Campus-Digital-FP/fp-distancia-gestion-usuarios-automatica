@@ -30,7 +30,7 @@ def main():
     #########################################
     # Obtengo curso académico que debo usar
     #########################################
-    curso_academico = "2020" # TODO
+    curso_academico = get_curso_para_REST()
     #########################################
     # Transformo JSON de SIGAD a lista
     #########################################
@@ -39,7 +39,6 @@ def main():
     # Hago la 1era llamada
     print( 'Making the call to the 1st web service:')
     resp_data = conexion_1er_ws.getJson()
-
     y = json.loads(resp_data);
     if y is not None:
         codigo=y["codigo"]
@@ -259,6 +258,19 @@ def main():
     #
     # End of main 
     # 
+
+def get_curso_para_REST():
+    """
+    será un valor variable para indicar el curso escolar del que se solicitan datos. 
+    Por ejemplo, para solicitar los datos del curso escolar 2020/2021 habrá que utilizar el valor 2020
+    """
+    now = datetime.now() # current date and time
+    anio = now.strftime("%Y")
+    mes = now.strftime("%m")
+    if int(mes) in [1,2,3,4,5,6,7]:
+        return str( int(anio) - 1 )
+    else:
+        return anio
 
 def get_cursos_en_que_esta_matriculado(moodle, id_usuario):
     """
