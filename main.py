@@ -21,6 +21,9 @@ from classes.Modulo import *
 def main():
     #
     mensajes_email = []
+    #
+    mensajes_email.append( get_date_time() )
+    mensajes_email.append("Comenzamos:")
     usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] # ids de users creados en deploy que no hay que borrar
     # 
     moodle = get_moodle(SUBDOMAIN)[0]
@@ -124,7 +127,7 @@ def main():
         print("- ", repr(alumnoMoodle) )
         if int(alumnoMoodle['userid']) not in usuarios_moodle_no_borrables: 
             delete_alumno_moodle(alumnoMoodle, moodle)
-            mensajes_email.append("- " + alumnoMoodle)
+            mensajes_email.append("- " + repr(alumnoMoodle) )
         else:
             print("Alumno configurado como NO borrable")
     ########################
