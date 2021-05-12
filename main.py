@@ -22,14 +22,24 @@ def main():
     #
     mensajes_email = []
     #
-    mensajes_email.append( get_date_time() )
-    mensajes_email.append("Comenzamos:")
+    mensajes_email.append(get_date_time_for_humans() + " Comenzamos:")
+    mensajes_email.append("RESUMEN DETALLADO")
     usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] # ids de users creados en deploy que no hay que borrar
     # 
     moodle = get_moodle(SUBDOMAIN)[0]
     alumnos_sigad = []
     alumnos_moodle = get_alumnos_moodle_no_borrados(moodle) # Alumnos que figuran en moodle antes de ejecutar el script
-    
+    # contadores
+    num_alumnos_pre_app = 0
+    num_alumnos_post_script = 0
+    num_alumnos_borrados = 0
+    num_alumnos_modificado_login = 0
+    num_alumnos_creados = 0
+    num_modulos_matriculados = 0
+    num_alumnos_no_matriculados_en_cursos_inexistentes = 0
+    #
+    num_alumnos_pre_app = len(alumnos_moodle)
+
     #########################################
     # Obtengo curso académico que debo usar
     #########################################
@@ -89,15 +99,13 @@ def main():
     print("*** Alumnos que estan en moodle y no en SIGAD:")
     for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
         print("alumnoMoodle: ", alumnoMoodle)
-
     ########################
     # De cada alumno que esté en moodle y no en sigad miro si en moodle hay alguien con ese email
     # - si hay alguien con ese email considero que es la misma persona a la que han actualizado DNI/NIE/... en SIGAD y la actualizo
     # - si no hay nadie con ese email considero que es una baja y lo botto
     ########################
     print("*** Alumnos que habría que actualizar su id:")
-    mensajes_email.append( get_date_time() )
-    mensajes_email.append("***** Alumnos actualizados su id:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos actualizados su id:")
     alumnos_a_borrar = [ ] # los que no haya que actualizar son para borrar, irán aquí
     for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
         existe = False
@@ -106,12 +114,12 @@ def main():
             if alumnoSIGAD.getEmail() is not None \
                     and alumnoMoodle['email'].lower() == alumnoSIGAD.getEmail().lower():
                 existe = True
-                # TODO: A este alumno de moodle habrá que ponerle el nuevo id que tenga en SIGAD
                 print("- Alumno a actualizar su login por coincidencia de email: ", repr(alumnoMoodle) )
                 print("habría que ponerle de login ", alumnoSIGAD.getDocumento() )
                 userid = alumnoMoodle['userid']
                 username_nuevo = alumnoSIGAD.getDocumento().lower()
                 update_moodle_username(moodle, userid, username_nuevo)
+                num_alumnos_modificado_login = num_alumnos_modificado_login + 1
                 mensajes_email.append("- Al alumno que tenía usuario de acceso " + alumnoMoodle['username'] + \
                         " se le ha cambiado a " + alumnoSIGAD.getDocumento() + \
                         "(" + alumnoSIGAD.getEmail().lower() + ").")
@@ -121,12 +129,12 @@ def main():
 
     
     print("*** Alumnos a eliminar de Moodle")
-    mensajes_email.append( get_date_time() )
-    mensajes_email.append("***** Alumnos eliminados:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos eliminados:")
     for alumnoMoodle in alumnos_a_borrar:
         print("- ", repr(alumnoMoodle) )
         if int(alumnoMoodle['userid']) not in usuarios_moodle_no_borrables: 
             delete_alumno_moodle(alumnoMoodle, moodle)
+            num_alumnos_borrados = num_alumnos_borrados + 1
             mensajes_email.append("- " + repr(alumnoMoodle) )
         else:
             print("Alumno configurado como NO borrable")
@@ -139,8 +147,7 @@ def main():
     ########################
     alumnos_moodle = get_alumnos_moodle_no_borrados(moodle) 
     cursos_moodle = get_cursos(moodle)
-    mensajes_email.append( get_date_time() )
-    mensajes_email.append("***** Alumnos desmatriculados:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos desmatriculados:")
     for alumno_moodle in alumnos_moodle:
         userid = alumno_moodle['userid']
         # no recorro los no borrables
@@ -195,8 +202,7 @@ def main():
     # - si un alumno del fichero no existe en moodle lo creo
     # - matriculo a un alumno en los cursos que tenga asignados en SIGAD
     ########################
-    mensajes_email.append( get_date_time() )
-    mensajes_email.append("***** Alumnos creados y matriculados:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos creados y matriculados:")
     usuarios_no_creables = [ ]
     # Creo diccionario de id_cursoshortname para evitar usar get_id_de_curso_by_shortname en cada iteración
     diccionario_cursos = {curso['shortname'] : curso['courseid'] for curso in cursos_moodle}
@@ -210,6 +216,7 @@ def main():
         if not existeAlumnoEnMoodle(moodle, alumno):
             try:
                 id_alumno = crearAlumnoEnMoodle(moodle, alumno)
+                num_alumnos_creados = num_alumnos_creados + 1
                 mensajes_email.append("- Alumno " + alumno.getDocumento() + " creado.")
             except ValueError as e:
                 usuarios_no_creables.append(alumno)
@@ -236,27 +243,42 @@ def main():
 
                     if id_curso == "": # el curso no existe
                         print("El curso ", str(shortname_curso) , " no existe.", sep="")
-                        mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " NO puede matricularse en "+ shortname_curso + "por que el curso NO existe.")
+                        mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " NO puede matricularse en "+ shortname_curso + " por que el curso NO existe.")
+                        num_alumnos_no_matriculados_en_cursos_inexistentes = num_alumnos_no_matriculados_en_cursos_inexistentes + 1
                     elif not is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
                         matricula_alumno_en_curso(moodle, id_alumno, id_curso)
+                        num_modulos_matriculados = num_modulos_matriculados + 1
                         mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " matriculado en "+ shortname_curso + ".")
                     else:
                         print("El alumno (",id_alumno,") ya estaba matriculado en ", shortname_curso, sep="")
     # Listo alumnos que no se han podido crear
-    mensajes_email.append( get_date_time() )
-    mensajes_email.append("***** Alumnos que no se han podido crear:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos que no se han podido crear:")
     print("Alumnos de SIGAD que no se han podido crear en Moodle: ")
     for alumno in usuarios_no_creables:
         print( "- ", repr(alumno) )
-        mensajes_email.append("- " + alumno.getDocumento() )
+        mensajes_email.append("- " + repr(alumno) )
+    ########################
+    # Añado un resumen al final del mensaje
+    ########################
+    mensajes_email.append("RESUMEN:")
+    mensajes_email.append("- Alumnos existentes en moodle antes de ejecutar este programa: " + str(num_alumnos_pre_app) )
+    num_alumnos_post_script = len( get_alumnos_moodle_no_borrados(moodle) )
+    mensajes_email.append("- Alumnos existentes en moodle después de ejecutar este programa: " + str(num_alumnos_post_script) )
+    mensajes_email.append("- Alumnos creados por este script: " + str(num_alumnos_creados) )
+    mensajes_email.append("- Alumnos borrados por este script: " + str(num_alumnos_borrados) )
+    mensajes_email.append("- Alumnos cuyo login ha sido modificado por este script: " + str(num_alumnos_modificado_login) )
+    mensajes_email.append("- Número de matriculas hechas en módulos: " + str(num_modulos_matriculados) )
+    mensajes_email.append("- Número de matriculas no hechas por no existir el curso destino: " + str(num_alumnos_no_matriculados_en_cursos_inexistentes) )
     ########################
     # Envío email resumen de lo hecho por email a responsables
     ########################
     texto = """
         {}
-        """.format("\n".join(mensajes_email[1:]))
-    print(texto)
-    send_email("fp@catedu.es", "Informe automatizado gestión automática usuarios moodle", texto)
+        """.format("<br/>".join(mensajes_email[1:]))
+    #print(texto)
+    emails = REPORT_TO.split()
+    for email in emails:
+        send_email(email, "Informe automatizado gestión automática usuarios moodle", texto)
 
     #
     # End of main 
@@ -331,7 +353,15 @@ def get_date_time():
     info from  https://www.programiz.com/python-programming/datetime/strftime
     """
     now = datetime.now() # current date and time
-    return now.strftime("%Y%m%d %H%M%S")
+    return now.strftime("%Y%m%d-%H%M%S")
+
+def get_date_time_for_humans():
+    """
+    return the datetime in format yyyymmddhhmmss
+    info from  https://www.programiz.com/python-programming/datetime/strftime
+    """
+    now = datetime.now() # current date and time
+    return now.strftime("%d/%m/%Y %H:%M:%S")
 
 def guarda_fichero(nombre_fichero, contenido):
     """
@@ -433,20 +463,22 @@ def send_email(destinatario, asunto, texto):
     """
     Al destinatario envía un email con el asunto y texto dados
     """
-    context = ssl.create_default_context()
+    port = SMTP_PORT  # For starttls
+    smtp_server = SMTP_HOSTS
+    sender_email = SMTP_USER
+    receiver_email = destinatario
+    password = SMTP_PASSWORD
+    texto = texto.encode('utf-8')
+    message = f"Subject: {asunto}\nMIME-Version: 1.0\nContent-type: text/html\n\n{texto}".encode("utf-8")
 
-    with smtplib.SMTP_SSL(SMTP_HOSTS, SMTP_PORT, context=context) as server:
+    context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_server, port) as server:
         try:
-            server = smtplib.SMTP_SSL(SMTP_HOSTS, SMTP_PORT,context=context)
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            message = f"Subject: {asunto}\n\n{texto}"
-            server.sendmail(
-                SMTP_USER, 
-                destinatario, 
-                message
-            )
-        except:
-            print("Error de autenticación")
+            # server.ehlo()  # Can be omitted
+            server.starttls(context=context)
+            # server.ehlo()  # Can be omitted
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message)
         finally:
             server.quit()
 
@@ -672,4 +704,7 @@ def crearAlumnoEnMoodle(moodle, alumno):
 ###################################################
 # Lanzamos!
 ###################################################
-main()
+try:
+    main()
+except:
+    send_email("fp@catedu.es", "ERROR - Informe automatizado gestión automática usuarios moodle", "Ha fallado el informe, revisar logs")
