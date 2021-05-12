@@ -28,3 +28,6 @@ DB_USER=""
 DB_PASS=""
 DB_HOST=""
 DB_NAME=""
+
+#reports
+REPORT_TO=""#emails splited by spaces
