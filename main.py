@@ -25,7 +25,7 @@ def main():
     mensajes_email.append("")
     mensajes_email.append(get_date_time_for_humans() + " Comenzamos:")
     mensajes_email.append("<b>RESUMEN DETALLADO</b>")
-    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] # ids de users creados en deploy que no hay que borrar
+    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] # ids de users creados en deploy que no hay que borrar
     # 
     moodle = get_moodle(SUBDOMAIN)[0]
     alumnos_sigad = []
@@ -227,6 +227,7 @@ def main():
                         mensajes_email.append("- " + username + "  matricula suspendida en " + course_shortname)
                         num_matriculas_suspendidas = num_matriculas_suspendidas + 1
                     break # una vez he procesado al alumno no tiene sentido seguir mirando los demás alumnos de SIGAD
+    
     ########################
     # Proceso el fichero JSON (foto de SIGAD)
     # - si un alumno del fichero no existe en moodle lo creo
@@ -239,7 +240,7 @@ def main():
     diccionario_alumnos = {alumno['username'] : alumno['userid'] for alumno in alumnos_moodle}
     #
     for alumno in alumnos_sigad:
-        print("*** Procesando alumno de fichero JSNON ***")
+        print("*** Procesando alumno de fichero JSON ***")
         print("-", repr(alumno) )
         id_alumno = ""
         # Creo en moodle los alumnos que estén en el json y no estén en moodle
@@ -248,6 +249,7 @@ def main():
                 id_alumno = crearAlumnoEnMoodle(moodle, alumno)
                 num_alumnos_creados = num_alumnos_creados + 1
                 mensajes_email.append("- Alumno " + alumno.getDocumento() + " creado.")
+                matricula_alumno_en_cohorte_alumnado(moodle, id_alumno)
             except ValueError as e:
                 usuarios_no_creables.append(alumno)
                 continue
@@ -260,6 +262,7 @@ def main():
             codigo_centro = centro.get_codigo_centro()
             for ciclo in centro.getCiclos():
                 siglas_ciclo = ciclo.get_siglas_ciclo()
+                matricula_alumno_en_cohorte(moodle, id_alumno, codigo_centro, siglas_ciclo)
                 for modulo in ciclo.getModulos():
                     id_materia = modulo.get_id_materia()
 
@@ -287,6 +290,7 @@ def main():
     for alumno in usuarios_no_creables:
         print( "- ", repr(alumno) )
         mensajes_email.append("- " + repr(alumno) )
+
     ########################
     # En agosto todas las matrículas que están suspendidas las borramos
     ########################
@@ -299,6 +303,7 @@ def main():
             studentid = matricula['studentid']
             desmatricula_alumno_en_curso(moodle, studentid, courseid)
             num_matriculas_borradas = num_matriculas_borradas + 1
+        # TODO: Eliminar miembros de las cohortes
 
     ########################
     # Añado un resumen al final del mensaje
@@ -565,6 +570,22 @@ def run_command(command, capture=False):
         return data
     if not capture:
         os.system(command_string)
+
+def matricula_alumno_en_cohorte_alumnado(moodle, id_alumno):
+    """
+    Dado un alumno y un curso los desmatricula en el moodle dado
+    """
+    print("matricula_alumno_en_cohorte(...)")
+    cmd = "moosh -n cohort-enrol -u " + id_alumno + " \"alumnado\""
+    run_moosh_command(moodle, cmd, False)
+
+def matricula_alumno_en_cohorte(moodle, id_alumno, cod_centro, id_estudio):
+    """
+    Dado un alumno y un curso los desmatricula en el moodle dado
+    """
+    print("matricula_alumno_en_cohorte(...)")
+    cmd = "moosh -n cohort-enrol -u " + id_alumno + " \"" + cod_centro + "-" + id_estudio + "\""
+    run_moosh_command(moodle, cmd, False)
 
 def desmatricula_alumno_en_curso(moodle, id_alumno, id_curso):
     """
