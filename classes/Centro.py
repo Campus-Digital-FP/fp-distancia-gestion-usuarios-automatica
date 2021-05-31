@@ -14,6 +14,9 @@ class Centro:
     def get_codigo_centro(self):
         return self.__codigoCentro
 
+    def get_centro(self):
+        return self.__centro
+
     def getCiclos(self):
         return self.__ciclos
 

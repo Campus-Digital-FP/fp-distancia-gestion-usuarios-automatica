@@ -15,6 +15,10 @@ class Ciclo:
 
     def get_siglas_ciclo(self):
         return self.__siglasCiclo
+        self.__modulos.append(modulo)
+
+    def get_ciclo(self):
+        return self.__ciclo
 
     def getModulos(self):
         return self.__modulos

@@ -9,6 +9,9 @@ class Modulo:
     def get_id_materia(self):
         return self.__idMateria
 
+    def get_modulo(self):
+        return self.__modulo
+
     def __repr__(self):
         return "idMateria: " + str(self.__idMateria) \
             + ", modulo: " + self.__modulo \
