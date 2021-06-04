@@ -11,6 +11,7 @@ import sys
 import io
 import smtplib
 import ssl
+import traceback
 from datetime import datetime
 from Config import *
 from Conexion import *
@@ -44,6 +45,7 @@ def main():
     num_matriculas_suspendidas = 0
     num_matriculas_borradas = 0
     num_alumnos_no_matriculados_en_cursos_inexistentes = 0
+    num_emails_enviados = 0
     #
     num_alumnos_pre_app = len(alumnos_moodle)
 
@@ -308,25 +310,20 @@ def main():
                         print("El alumno (",id_alumno,") ya estaba matriculado en ", shortname_curso, sep="")
         # envío email
         if alumno_es_nuevo:
-            #matriculado_en_texto = """{}""".format("<br/>".join( matriculado_en[1:])
             matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
-
             nombre = return_text_for_html( alumno.getNombre() )
             apellidos = return_text_for_html( alumno.getApellidos() )
-
-            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema acuda a la secci&oacute;n de ayuda/incidencias.<br/><br/><br/>Saludos'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
-
+            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
             send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
+            num_emails_enviados = num_emails_enviados + 1 
         else:
             if len(matriculado_en) > 0:
-                matriculado_en_texto = """{}""".format("<br/>".join( return_text_for_html(matriculado_en[1:]) ))
-
+                matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
                 nombre = return_text_for_html( alumno.getNombre() )
                 apellidos = return_text_for_html( alumno.getApellidos() )
-                
-                mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.adistanciafparagon.es/ se le han añadido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema acuda a la secci&oacute;n de ayuda/incidencias.<br/><br/><br/>Saludos'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto )
-
+                mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.adistanciafparagon.es/ se le han a&ntilde;adido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto )
                 send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
+                num_emails_enviados = num_emails_enviados + 1
 
     # Listo alumnos que no se han podido crear
     # mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos que no se han podido crear:")
@@ -363,13 +360,13 @@ def main():
     mensajes_email.append("- Cantidad de matriculas suspendidas en modulos: " + str(num_matriculas_suspendidas) )
     mensajes_email.append("- Cantidad de matriculas borradas en modulos (solo en Agosto): " + str(num_matriculas_borradas) )
     mensajes_email.append("- Cantidad de matriculas no hechas por no existir el curso destino: " + str(num_alumnos_no_matriculados_en_cursos_inexistentes) )
+    mensajes_email.append("- Cantidad de emails enviados: " + str(num_emails_enviados) )
     ########################
     # Envío email resumen de lo hecho por email a responsables
     ########################
-    texto = """
-        {}
-        """.format("<br/>".join(mensajes_email[1:]))
-    #print(texto)
+    texto = "<br/>".join( map(return_text_for_html, mensajes_email) )
+    #texto = """{}""".format("<br/>".join(mensajes_email[1:]))
+    
     emails = REPORT_TO.split()
     for email in emails:
         send_email(email, "Informe automatizado gestión automática usuarios moodle", texto)
@@ -387,6 +384,7 @@ def return_text_for_html(cadena):
     """
     Cada una cadena de texto reemplaza los caracteres con tildes por su equivalente en html
     """
+    print("return_text_for_html(",cadena,"). Tipo(", type(cadena) , ")" , sep="")
     cadena = cadena.replace("á", "&aacute;")
     cadena = cadena.replace("é", "&eacute;")
     cadena = cadena.replace("í", "&iacute;")
@@ -655,7 +653,7 @@ def desmatricula_alumno_en_cohorte_alumnado(moodle, id_alumno):
     Elimina al alumno dado de la cohorte alumnado
     """
     print("desmatricula_alumno_en_cohorte_alumnado(...)")
-    cmd = "moosh -n cohort-unenrol -u " + id_alumno + " \"alumnado\""
+    cmd = "moosh -n cohort-unenrol -u " + str(id_alumno) + " \"alumnado\""
     run_moosh_command(moodle, cmd, False)    
 
 def matricula_alumno_en_cohorte(moodle, id_alumno, cod_centro, id_estudio):
@@ -1012,5 +1010,10 @@ def crearAlumnoEnMoodle(moodle, alumno, password):
 try:
     main()
 except Exception as exc:
+    print("1.- traceback.print_exc()")
+    traceback.print_exc()
+    print("2.- traceback.print_exception(*sys.exc_info())")
+    traceback.print_exception(*sys.exc_info())
+    print("--------------------")
     print(exc)
-    send_email("fp@catedu.es", "ERROR - Informe automatizado gestión automática usuarios moodle", "Ha fallado el informe, revisar logs. <br/>Error: " + str(exc))
+    send_email("fp@catedu.es", "ERROR - Informe automatizado gestión automática usuarios moodle", "Ha fallado el informe, revisar logs. <br/>Error: " + str(exc) + "<br/><br/><br/>" + str(traceback.print_exc()) + "<br/><br/><br/>" + str(traceback.print_exception(*sys.exc_info())))
