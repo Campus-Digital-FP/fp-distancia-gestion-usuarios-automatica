@@ -68,7 +68,7 @@ def main():
         mensaje=y["mensaje"]
         idSolicitud=y["idSolicitud"]
         print("Código: " , codigo, ", Mensaje: ", mensaje, "idSolicitud: ", idSolicitud)
-        guarda_fichero(get_date_time() + ".ws1.log", str(resp_data) )
+        guarda_fichero(get_date_time() + "." + SUBDOMAIN + ".ws1.log", str(resp_data) )
         if codigo == 0: # éxito en la 1era llamada
             # 
             print( 'Waiting 10 seconds before the first call to the 2nd web service...')
@@ -82,7 +82,7 @@ def main():
                     codigo=y["codigo"]
                     mensaje=y["mensaje"]
                     print("codigo: " + str(codigo) + ", mensaje: " + str(mensaje))
-                    guarda_fichero(get_date_time() + ".ws2.log", str(resp_data) )
+                    guarda_fichero(get_date_time() + "." + SUBDOMAIN + ".ws2.log", str(resp_data) )
                     if codigo == 0: # éxito de la 2nda llamada
                         procesaJsonEstudiantes(y, alumnos_sigad)
                         break
