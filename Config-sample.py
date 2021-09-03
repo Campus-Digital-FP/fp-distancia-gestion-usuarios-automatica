@@ -30,4 +30,4 @@ DB_HOST=""
 DB_NAME=""
 
 #reports
-REPORT_TO=""#emails splited by spaces
+REPORT_TO=""#emails splitted by spaces
