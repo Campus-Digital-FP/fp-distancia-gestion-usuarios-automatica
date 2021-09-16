@@ -41,11 +41,13 @@ def main():
     num_alumnos_reactivados = 0
     num_alumnos_modificado_login = 0
     num_alumnos_creados = 0
+    num_alumnos_no_creables = 0
     num_modulos_matriculados = 0
     num_matriculas_suspendidas = 0
     num_matriculas_borradas = 0
     num_alumnos_no_matriculados_en_cursos_inexistentes = 0
     num_emails_enviados = 0
+    num_emails_no_enviados = 0
     #
     num_alumnos_pre_app = len(alumnos_moodle)
 
@@ -100,7 +102,9 @@ def main():
     for alumnoMoodle in alumnos_suspendidos:
         # comprobamos si existe por dni/nie/...
         for alumnoSIGAD in alumnos_sigad:
-            if alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
+            if alumnoMoodle['username'] is not None \
+                    and alumnoSIGAD.getDocumento() is not None \
+                    and alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
                 reactiva_usuario( moodle, alumnoMoodle['userid'] )
                 matricula_alumno_en_cohorte_alumnado(moodle, alumnoMoodle['userid'] )
                 num_alumnos_reactivados = num_alumnos_reactivados + 1
@@ -114,9 +118,13 @@ def main():
         existe = False
         # comprobamos si existe por dni/nie/...
         for alumnoSIGAD in alumnos_sigad:
+            if alumnoSIGAD.getDocumento() is None:
+                continue
+                
             if alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
                 existe = True
                 break
+        
         if not existe:
             alumnos_en_moodle_pero_no_SIGAD.append(alumnoMoodle)
             
@@ -154,7 +162,7 @@ def main():
 
     
     print("*** Alumnos a suspender de Moodle")
-    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos suspendidos:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos a procesar su suspensión (1º matrículas 2º a ellos):")
     for alumnoMoodle in alumnos_a_suspender:
         print("- ", repr(alumnoMoodle) )
         if int(alumnoMoodle['userid']) not in usuarios_moodle_no_borrables:
@@ -162,13 +170,14 @@ def main():
             # pero hay que mantenerlo en las cohortes ya que sacarlo puede borrar su progreso
             id_alumno = int(alumnoMoodle['userid'])
             cursos = get_cursos_en_que_esta_matriculado_un_alumno(moodle, id_alumno)
+            mensajes_email.append( get_date_time_for_humans() + "   ****** Matrículas suspendidas:")
             for curso in cursos:
-                mensajes_email.append( get_date_time_for_humans() + "   ****** Matrículas suspendidas:")
                 courseid = curso['courseid']
                 suspende_matricula_en_curso(moodle, id_alumno, courseid)
                 mensajes_email.append("- id_alumno: " + str(id_alumno) + " matrícula suspendida en id_curso: " + str(courseid) )
                 num_matriculas_suspendidas = num_matriculas_suspendidas + 1
             #
+            mensajes_email.append( get_date_time_for_humans() + "   ****** Alumno suspendido:")
             suspende_alumno_moodle(alumnoMoodle['userid'], moodle)
             num_alumnos_suspendidos = num_alumnos_suspendidos + 1
             mensajes_email.append("- " + repr(alumnoMoodle) )
@@ -313,24 +322,37 @@ def main():
             matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
             nombre = return_text_for_html( alumno.getNombre() )
             apellidos = return_text_for_html( alumno.getApellidos() )
-            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
-            send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
-            num_emails_enviados = num_emails_enviados + 1 
+            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso (lunes 27 de septiembre).<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
+            enviado = send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
+            if enviado:
+                num_emails_enviados = num_emails_enviados + 1
+                print("num_emails_enviados: ", num_emails_enviados)
+            else:
+                num_emails_no_enviados = num_emails_no_enviados + 1
+                print("Ha fallado el envío del email. Total fallos: '", num_emails_no_enviados, "'")
+            
+            
         else:
             if len(matriculado_en) > 0:
                 matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
                 nombre = return_text_for_html( alumno.getNombre() )
                 apellidos = return_text_for_html( alumno.getApellidos() )
                 mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.adistanciafparagon.es/ se le han a&ntilde;adido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto )
-                send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
-                num_emails_enviados = num_emails_enviados + 1
+                enviado = send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
+                if enviado:
+                    num_emails_enviados = num_emails_enviados + 1
+                    print("num_emails_enviados: ", num_emails_enviados)
+                else:
+                    num_emails_no_enviados = num_emails_no_enviados + 1
+                    print("Ha fallado el envío del email. Total fallos: '", num_emails_no_enviados, "'")
 
     # Listo alumnos que no se han podido crear
-    # mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos que no se han podido crear:")
-    # print("Alumnos de SIGAD que no se han podido crear en Moodle: ")
-    # for alumno in usuarios_no_creables:
-    #     print( "- ", repr(alumno) )
-    #     mensajes_email.append("- " + repr(alumno) )
+    mensajes_email.append( get_date_time_for_humans() + " <b>***** Alumnos que no se han podido crear</b>:")
+    print("Alumnos de SIGAD que no se han podido crear en Moodle: ")
+    for alumno in usuarios_no_creables:
+        print( "- ", repr(alumno) )
+        mensajes_email.append("- " + repr(alumno) )
+        num_alumnos_no_creables = num_alumnos_no_creables + 1
 
     ########################
     # En agosto todas las matrículas que están suspendidas las borramos
@@ -353,6 +375,7 @@ def main():
     num_alumnos_post_script = len( get_alumnos_moodle_no_borrados(moodle) )
     mensajes_email.append("- Alumnos existentes en moodle despues de ejecutar este programa: " + str(num_alumnos_post_script) )
     mensajes_email.append("- Alumnos creados por este script: " + str(num_alumnos_creados) )
+    mensajes_email.append("- Alumnos que NO es posible crear por este script: " + str(num_alumnos_no_creables) )
     mensajes_email.append("- Alumnos reactivados por este script: " + str(num_alumnos_reactivados) )
     mensajes_email.append("- Alumnos suspendidos por este script: " + str(num_alumnos_suspendidos) )
     mensajes_email.append("- Alumnos cuyo login ha sido modificado por este script: " + str(num_alumnos_modificado_login) )
@@ -361,6 +384,7 @@ def main():
     mensajes_email.append("- Cantidad de matriculas borradas en modulos (solo en Agosto): " + str(num_matriculas_borradas) )
     mensajes_email.append("- Cantidad de matriculas no hechas por no existir el curso destino: " + str(num_alumnos_no_matriculados_en_cursos_inexistentes) )
     mensajes_email.append("- Cantidad de emails enviados: " + str(num_emails_enviados) )
+    mensajes_email.append("- Cantidad de emails NO enviados: " + str(num_emails_no_enviados) )
     ########################
     # Envío email resumen de lo hecho por email a responsables
     ########################
@@ -594,7 +618,7 @@ def guarda_fichero(nombre_fichero, contenido):
     Guarda en disco duro, en la carpeta logs un fichero con el nombre indicado en parámetro y el contenido dado
     """
     print("guarda_fichero(...)")
-    text_file = open("./logs/"+nombre_fichero, "w")
+    text_file = open(PATH + "/logs/" + nombre_fichero, "w")
     n = text_file.write(contenido)
     text_file.close()
 
@@ -732,9 +756,11 @@ def is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
         return True
 
 def send_email(destinatario, asunto, texto):
+    print("send_email(destinatario: '" + destinatario + "')")
     """
     Al destinatario envía un email con el asunto y texto dados
     """
+    enviado = False
     port = SMTP_PORT  # For starttls
     smtp_server = SMTP_HOSTS
     sender_email = SMTP_USER
@@ -751,8 +777,15 @@ def send_email(destinatario, asunto, texto):
             # server.ehlo()  # Can be omitted
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message)
+            enviado = True
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
         finally:
             server.quit()
+    return enviado
 
 def suspende_alumno_moodle(id_usuario, moodle):
     """
@@ -955,6 +988,8 @@ def existeAlumnoEnMoodle(moodle, alumno):
     Devuelve false si no existe
     """
     print("existeAlumnoEnMoodle(...)")
+    if alumno.getDocumento() is None:
+        return False
 
     # moosh -n  user-list "username = 'estudiante1'"
     cmd = "moosh -n user-list \"username = '"+ alumno.getDocumento().lower() +"'\""
@@ -968,12 +1003,8 @@ def existeAlumnoEnMoodle(moodle, alumno):
     # End of existeAlumnoEnMoodle
     #
 
-def crearAlumnoEnMoodle(moodle, alumno, password):
-    """
-    Crea un usuario en moodle con los datos del objeto alumno
-    Devuelve el id del alumno creado
-    """
-    print("crearAlumnoEnMoodle(...)")
+def isAlumnoCreable(alumno):
+    print("isAlumnoCreable(...)")
     alumno_creable = True
     if alumno.getEmail() is None:
         print("El alumno a crear no tiene email")
@@ -987,6 +1018,16 @@ def crearAlumnoEnMoodle(moodle, alumno, password):
     if alumno.getDocumento() is None:
         print("El alumno a crear no tiene documento")
         alumno_creable = False
+
+    return alumno_creable
+
+def crearAlumnoEnMoodle(moodle, alumno, password):
+    """
+    Crea un usuario en moodle con los datos del objeto alumno
+    Devuelve el id del alumno creado
+    """
+    print("crearAlumnoEnMoodle(...)")
+    alumno_creable = isAlumnoCreable(alumno)
 
     if alumno_creable:
         cmd = "moosh -n user-create --password " + password + " --email " + alumno.getEmail() \
