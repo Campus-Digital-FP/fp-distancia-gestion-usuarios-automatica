@@ -323,13 +323,21 @@ def main():
             nombre = return_text_for_html( alumno.getNombre() )
             apellidos = return_text_for_html( alumno.getApellidos() )
             mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso (lunes 27 de septiembre).<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
-            enviado = send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
+            
+            destinatario = "fp@catedu.es"
+            if SUBDOMAIN == "www":
+                destinatario = alumno.getEmail()
+            else:
+                print("Debería haberse enviado a '", alumno.getEmail(), "'." )
+
+            enviado = send_email( destinatario , "FP a distancia - Aragón", mensaje)
+
             if enviado:
                 num_emails_enviados = num_emails_enviados + 1
                 print("num_emails_enviados: ", num_emails_enviados)
             else:
                 num_emails_no_enviados = num_emails_no_enviados + 1
-                print("Ha fallado el envío del email. Total fallos: '", num_emails_no_enviados, "'")
+                print("Ha fallado el envío del email a '", destinatario, "'. Total fallos: '", num_emails_no_enviados, "'")
             
             
         else:
@@ -338,13 +346,21 @@ def main():
                 nombre = return_text_for_html( alumno.getNombre() )
                 apellidos = return_text_for_html( alumno.getApellidos() )
                 mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.adistanciafparagon.es/ se le han a&ntilde;adido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto )
-                enviado = send_email("fp@catedu.es", "FP a distancia - Aragón", mensaje)
+
+                destinatario = "fp@catedu.es"
+                if SUBDOMAIN == "www":
+                    destinatario = alumno.getEmail()
+                else:
+                    print("Debería haberse enviado a '", alumno.getEmail(), "'." )
+                
+                enviado = send_email( destinatario , "FP a distancia - Aragón", mensaje)
+
                 if enviado:
                     num_emails_enviados = num_emails_enviados + 1
                     print("num_emails_enviados: ", num_emails_enviados)
                 else:
                     num_emails_no_enviados = num_emails_no_enviados + 1
-                    print("Ha fallado el envío del email. Total fallos: '", num_emails_no_enviados, "'")
+                    print("Ha fallado el envío del email a '", destinatario, "'. Total fallos: '", num_emails_no_enviados, "'")
 
     # Listo alumnos que no se han podido crear
     mensajes_email.append( get_date_time_for_humans() + " <b>***** Alumnos que no se han podido crear</b>:")
