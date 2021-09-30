@@ -29,7 +29,7 @@ def main():
     mensajes_email.append("<b>ENTORNO:</b>")
     mensajes_email.append(SUBDOMAIN)
     mensajes_email.append("<b>RESUMEN DETALLADO</b>")
-    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] # ids de users creados en deploy que no hay que borrar
+    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] # ids de users creados en deploy que no hay que borrar
     # 
     moodle = get_moodle(SUBDOMAIN)[0]
     alumnos_sigad = []
@@ -98,6 +98,9 @@ def main():
     # Obtengo los alumnos (profesores no) que están suspendidos en moodle y miro si están en el fichero de SIGAD
     # Si están en el fichero de SIGAD los reactivo
     ########################
+    mensajes_email.append("")
+    mensajes_email.append("*** <b>Estudiantes suspendidos en Moodle pero que están en el fichero de SIGAD (habria que reactivar)</b>:")
+    mensajes_email.append("")
     alumnos_suspendidos = get_alumnos_suspendidos(moodle)
     for alumnoMoodle in alumnos_suspendidos:
         # comprobamos si existe por dni/nie/...
@@ -106,6 +109,7 @@ def main():
                     and alumnoSIGAD.getDocumento() is not None \
                     and alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
                 reactiva_usuario( moodle, alumnoMoodle['userid'] )
+                mensajes_email.append("Estudiante '"+ alumnoMoodle['userid']+ "' reactivado")
                 matricula_alumno_en_cohorte_alumnado(moodle, alumnoMoodle['userid'] )
                 num_alumnos_reactivados = num_alumnos_reactivados + 1
                 break
@@ -129,8 +133,12 @@ def main():
             alumnos_en_moodle_pero_no_SIGAD.append(alumnoMoodle)
             
     print("*** Alumnos que estan en moodle y no en SIGAD:")
+    mensajes_email.append("")
+    mensajes_email.append(get_date_time_for_humans() + "*** <b>Alumnos que estan en moodle y no en SIGAD</b>:")
+    mensajes_email.append("")
     for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
         print("alumnoMoodle: ", alumnoMoodle)
+        mensajes_email.append("alumnoMoodle: " + str(alumnoMoodle) )
     
     ########################
     # De cada alumno que esté en moodle y no en sigad miro si en moodle hay alguien con ese email
@@ -138,7 +146,9 @@ def main():
     # - si no hay nadie con ese email considero que es una baja y lo suspendo
     ########################
     print("*** Alumnos que habría que actualizar su id:")
-    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos actualizados su id:")
+    mensajes_email.append("")
+    mensajes_email.append( get_date_time_for_humans() + " ***** <b>Alumnos a los que se ha actualizado su login</b>:")
+    mensajes_email.append("")
     alumnos_a_suspender = [ ] # los que no haya que actualizar son para suspender, irán aquí
     for alumnoMoodle in alumnos_en_moodle_pero_no_SIGAD:
         existe = False
@@ -161,27 +171,32 @@ def main():
             alumnos_a_suspender.append(alumnoMoodle)
 
     
-    print("*** Alumnos a suspender de Moodle")
-    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos a procesar su suspensión (1º matrículas 2º a ellos):")
+    print("*** Alumnos a suspender totalmente de Moodle")
+    mensajes_email.append("")
+    mensajes_email.append( get_date_time_for_humans() + " ***** <b>Estudiantes a suspender totalmente de Moodle (1ero matrículas, 2ndo a ellos)</b>:")
+    mensajes_email.append("")
     for alumnoMoodle in alumnos_a_suspender:
         print("- ", repr(alumnoMoodle) )
         if int(alumnoMoodle['userid']) not in usuarios_moodle_no_borrables:
             # Antes de suspender a un alumno hay que suspender todas sus matrículas en cursos
-            # pero hay que mantenerlo en las cohortes ya que sacarlo puede borrar su progreso
+            # pero HAY QUE mantenerlo en las cohortes ya que sacarlo puede borrar su progreso
             id_alumno = int(alumnoMoodle['userid'])
             cursos = get_cursos_en_que_esta_matriculado_un_alumno(moodle, id_alumno)
-            mensajes_email.append( get_date_time_for_humans() + "   ****** Matrículas suspendidas:")
+            mensajes_email.append("- Procesando a: " + repr(alumnoMoodle) )
             for curso in cursos:
                 courseid = curso['courseid']
                 suspende_matricula_en_curso(moodle, id_alumno, courseid)
-                mensajes_email.append("- id_alumno: " + str(id_alumno) + " matrícula suspendida en id_curso: " + str(courseid) )
+                mensajes_email.append("--- id_alumno: " + str(id_alumno) + " matrícula suspendida en id_curso: " + str(courseid) )
                 num_matriculas_suspendidas = num_matriculas_suspendidas + 1
             #
-            mensajes_email.append( get_date_time_for_humans() + "   ****** Alumno suspendido:")
+
+            # desmatricula_alumno_de_todas_cohortes(moodle, id_alumno) desmatricularlo de las cohortes hace que se pierda su progreso
+            # mensajes_email.append("--- cohortes en las que figuraba eliminado:")
             suspende_alumno_moodle(alumnoMoodle['userid'], moodle)
             num_alumnos_suspendidos = num_alumnos_suspendidos + 1
-            mensajes_email.append("- " + repr(alumnoMoodle) )
-            desmatricula_alumno_en_cohorte_alumnado(moodle, id_alumno)
+            mensajes_email.append("--- estudiante suspendido")
+            
+            
         else:
             print("Alumno configurado como NO borrable")
     
@@ -195,7 +210,9 @@ def main():
     ########################
     alumnos_moodle = get_alumnos_moodle_no_borrados(moodle) 
     cursos_moodle = get_cursos(moodle)
-    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos cuya matrícula ha sido suspendida:")
+    mensajes_email.append("")
+    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos a los que se ha suspendido su matrícula en algún curso:")
+    mensajes_email.append("")
     for alumno_moodle in alumnos_moodle:
         userid = alumno_moodle['userid']
         # no recorro los no borrables
@@ -220,7 +237,7 @@ def main():
             for alumno in alumnos_sigad:
                 
                 en_sigad_esta_matriculado = False
-                if alumno.getDocumento().lower() == username.lower(): # he encontrado al alumno en SIGAD
+                if alumno.getDocumento() is not None and alumno.getDocumento().lower() == username.lower(): # he encontrado al alumno en SIGAD
                     print("-", repr(alumno) )
                     print("Actualmente el alumno", username, "está ahora matriculado en moodle en el curso", course_shortname, ". Vamos a comprobar si en SIGAD también está")
                     
@@ -261,19 +278,29 @@ def main():
     # - si un alumno del fichero no existe en moodle lo creo
     # - matriculo a un alumno en los cursos que tenga asignados en SIGAD
     ########################
-    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos creados y matriculados:")
+    mensajes_email.append("")
+    mensajes_email.append( get_date_time_for_humans() + " ***** <b>Alumnos creados y matriculados</b>:")
+    mensajes_email.append("")
     usuarios_no_creables = [ ]
     # Creo diccionario de id_cursoshortname para evitar usar get_id_de_curso_by_shortname en cada iteración
     diccionario_cursos = {curso['shortname'] : curso['courseid'] for curso in cursos_moodle}
     diccionario_alumnos = {alumno['username'] : alumno['userid'] for alumno in alumnos_moodle}
     #
     for alumno in alumnos_sigad:
-        print("*** Procesando alumno de fichero JSON ***")
+        if num_emails_enviados >= 1900: # limitacion de 2.000 emails diarios en actual cuenta de gmail
+            mensajes_email.append("")
+            mensajes_email.append(" ALCANZADO LÍMITE DE ENVÍO DE EMAILS DIARIOS ")
+            mensajes_email.append(" ALCANZADO LÍMITE DE ENVÍO DE EMAILS DIARIOS ")
+            mensajes_email.append(" ALCANZADO LÍMITE DE ENVÍO DE EMAILS DIARIOS ")
+            mensajes_email.append("")
+            break 
+        print(get_date_time_for_humans() + "*** Procesando alumno de fichero JSON ***")
         print("-", repr(alumno) )
         id_alumno = ""
         alumno_es_nuevo = False
         # Creo en moodle los alumnos que estén en el json y no estén en moodle
         if not existeAlumnoEnMoodle(moodle, alumno):
+            print("Es nuevo")
             password = random_pass(10)
             try:
                 id_alumno = crearAlumnoEnMoodle(moodle, alumno, password)
@@ -285,8 +312,10 @@ def main():
                 usuarios_no_creables.append(alumno)
                 continue
         else:
+            print("Ya existía en moodle")
             #id_alumno = get_id_alumno_by_dni(moodle, alumno)
             id_alumno = diccionario_alumnos[ alumno.getDocumento().lower().rstrip() ]
+            print("Tenía el id_alumno:", id_alumno);
         
         matriculado_en = [ ]
         # Revisar si está matriculado dónde corresponda y matricular
@@ -363,7 +392,9 @@ def main():
                     print("Ha fallado el envío del email a '", destinatario, "'. Total fallos: '", num_emails_no_enviados, "'")
 
     # Listo alumnos que no se han podido crear
+    mensajes_email.append("")
     mensajes_email.append( get_date_time_for_humans() + " <b>***** Alumnos que no se han podido crear</b>:")
+    mensajes_email.append("")
     print("Alumnos de SIGAD que no se han podido crear en Moodle: ")
     for alumno in usuarios_no_creables:
         print( "- ", repr(alumno) )
@@ -374,6 +405,7 @@ def main():
     # En agosto todas las matrículas que están suspendidas las borramos
     ########################
     mes = get_mes()
+    print( "type(mes)", type(mes) )
     if mes == 8: 
         print("Agosto: se borran todas las matrículas suspendidas")
         matriculas = get_alumnos_con_matriculas_suspendidas_en_curso(moodle)
@@ -382,11 +414,19 @@ def main():
             studentid = matricula['studentid']
             desmatricula_alumno_en_curso(moodle, studentid, courseid)
             num_matriculas_borradas = num_matriculas_borradas + 1
+    elif mes == 9:
+        print("Prueba para ver si en septiembre entra aquí o requiere comparar con 09")
+    else:
+        print("No entra por ningún otro camino")
 
     ########################
     # Añado un resumen al final del mensaje
     ########################
+    mensajes_email.append("--------------------------------------------------------------------------")
+    mensajes_email.append("--------------------------------------------------------------------------")
+    mensajes_email.append("--------------------------------------------------------------------------")
     mensajes_email.append("<b>RESUMEN de acciones llevadas a cabo por este script:</b>")
+    mensajes_email.append("- Mes: " + str(mes) )
     mensajes_email.append("- Alumnos existentes en moodle antes de ejecutar este programa: " + str(num_alumnos_pre_app) )
     num_alumnos_post_script = len( get_alumnos_moodle_no_borrados(moodle) )
     mensajes_email.append("- Alumnos existentes en moodle despues de ejecutar este programa: " + str(num_alumnos_post_script) )
@@ -556,7 +596,7 @@ def get_cursos_en_que_esta_matriculado_un_alumno(moodle, id_alumno):
         # if line.split()[-1].endswith("moodle_1")
     ]
     matriculas.extend(matricula)
-    
+    print("matriculas: ", matriculas )
 
     return matriculas
     # End of get_cursos_en_que_esta_matriculado_un_alumno
@@ -688,13 +728,19 @@ def matricula_alumno_en_cohorte_alumnado(moodle, id_alumno):
     cmd = "moosh -n cohort-enrol -u " + id_alumno + " \"alumnado\""
     run_moosh_command(moodle, cmd, False)
 
-def desmatricula_alumno_en_cohorte_alumnado(moodle, id_alumno):
+def desmatricula_alumno_de_todas_cohortes(moodle, id_alumno):
     """
     Elimina al alumno dado de la cohorte alumnado
     """
-    print("desmatricula_alumno_en_cohorte_alumnado(...)")
-    cmd = "moosh -n cohort-unenrol -u " + str(id_alumno) + " \"alumnado\""
-    run_moosh_command(moodle, cmd, False)    
+    print("desmatricula_alumno_de_todas_cohortes(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                delete from mdl_cohort_members
+                where userid = {id_alumno}
+            \"
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_alumno = id_alumno )
+    run_command( command, False )   
 
 def matricula_alumno_en_cohorte(moodle, id_alumno, cod_centro, id_estudio):
     """
@@ -722,7 +768,7 @@ def suspende_matricula_en_curso(moodle, id_alumno, id_curso):
     command = '''\
             mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
                 update mdl_user_enrolments ue 
-                set ue.status = 0 
+                set ue.status = 1 
                 where ue.userid = {id_alumno} and ue.enrolid in 
                     (select e.id
                     from mdl_enrol e 
