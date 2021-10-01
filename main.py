@@ -211,7 +211,7 @@ def main():
     alumnos_moodle = get_alumnos_moodle_no_borrados(moodle) 
     cursos_moodle = get_cursos(moodle)
     mensajes_email.append("")
-    mensajes_email.append( get_date_time_for_humans() + " ***** Alumnos a los que se ha suspendido su matrícula en algún curso:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** <b>Alumnos a los que se ha suspendido su matrícula en algún curso pero no a ellos</b>:")
     mensajes_email.append("")
     for alumno_moodle in alumnos_moodle:
         userid = alumno_moodle['userid']
@@ -406,7 +406,7 @@ def main():
     ########################
     mes = get_mes()
     print( "type(mes)", type(mes) )
-    if mes == 8: 
+    if mes == "08": 
         print("Agosto: se borran todas las matrículas suspendidas")
         matriculas = get_alumnos_con_matriculas_suspendidas_en_curso(moodle)
         for matricula in matriculas:
@@ -416,6 +416,8 @@ def main():
             num_matriculas_borradas = num_matriculas_borradas + 1
     elif mes == 9:
         print("Prueba para ver si en septiembre entra aquí o requiere comparar con 09")
+    elif mes == "10":
+        print("Prueba para ver si en octubre entra aquí usando cadenas para comparar")
     else:
         print("No entra por ningún otro camino")
 
