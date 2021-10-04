@@ -99,7 +99,7 @@ def main():
     # Si están en el fichero de SIGAD los reactivo
     ########################
     mensajes_email.append("")
-    mensajes_email.append("*** <b>Estudiantes suspendidos en Moodle pero que están en el fichero de SIGAD (habria que reactivar)</b>:")
+    mensajes_email.append(get_date_time_for_humans() + "*** <b>Estudiantes suspendidos en Moodle pero que están en el fichero de SIGAD (habria que reactivar)</b>:")
     mensajes_email.append("")
     alumnos_suspendidos = get_alumnos_suspendidos(moodle)
     for alumnoMoodle in alumnos_suspendidos:
@@ -173,7 +173,7 @@ def main():
     
     print("*** Alumnos a suspender totalmente de Moodle")
     mensajes_email.append("")
-    mensajes_email.append( get_date_time_for_humans() + " ***** <b>Estudiantes a suspender totalmente de Moodle (1ero matrículas, 2ndo a ellos)</b>:")
+    mensajes_email.append( get_date_time_for_humans() + " ***** <b>Estudiantes a suspender totalmente de Moodle al no estar en SIGAD, 1ero matrículas y 2ndo a ellos</b>:")
     mensajes_email.append("")
     for alumnoMoodle in alumnos_a_suspender:
         print("- ", repr(alumnoMoodle) )
@@ -405,7 +405,6 @@ def main():
     # En agosto todas las matrículas que están suspendidas las borramos
     ########################
     mes = get_mes()
-    print( "type(mes)", type(mes) )
     if mes == "08": 
         print("Agosto: se borran todas las matrículas suspendidas")
         matriculas = get_alumnos_con_matriculas_suspendidas_en_curso(moodle)
@@ -414,12 +413,6 @@ def main():
             studentid = matricula['studentid']
             desmatricula_alumno_en_curso(moodle, studentid, courseid)
             num_matriculas_borradas = num_matriculas_borradas + 1
-    elif mes == 9:
-        print("Prueba para ver si en septiembre entra aquí o requiere comparar con 09")
-    elif mes == "10":
-        print("Prueba para ver si en octubre entra aquí usando cadenas para comparar")
-    else:
-        print("No entra por ningún otro camino")
 
     ########################
     # Añado un resumen al final del mensaje
