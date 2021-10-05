@@ -421,7 +421,6 @@ def main():
     mensajes_email.append("--------------------------------------------------------------------------")
     mensajes_email.append("--------------------------------------------------------------------------")
     mensajes_email.append("<b>RESUMEN de acciones llevadas a cabo por este script:</b>")
-    mensajes_email.append("- Mes: " + str(mes) )
     mensajes_email.append("- Alumnos existentes en moodle antes de ejecutar este programa: " + str(num_alumnos_pre_app) )
     num_alumnos_post_script = len( get_alumnos_moodle_no_borrados(moodle) )
     mensajes_email.append("- Alumnos existentes en moodle despues de ejecutar este programa: " + str(num_alumnos_post_script) )
