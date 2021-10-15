@@ -166,6 +166,26 @@ def main():
                 mensajes_email.append("- Al alumno que tenia usuario de acceso " + alumnoMoodle['username'] + \
                         " se le ha cambiado a " + alumnoSIGAD.getDocumento() + \
                         "(" + alumnoSIGAD.getEmail().lower() + ").")
+                # Le envío email avisándolede su cambio de usuario 
+                usuario = alumnoSIGAD.getDocumento()
+                oldUsuario = alumnoMoodle['username']
+                mensaje = '''Hola,<br/><br/>su cuenta en https://{subdomain}.adistanciafparagon.es/ se ha actualizado.<br/><br/>Su nuevo usuario es: <b>{usuario}</b> en lugar de {oldUsuario}.<br/>Su contrase&ntilde;a NO ha sido modificada.<br/><br/>Recuerde que puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.adistanciafparagon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(subdomain = SUBDOMAIN, usuario = usuario, oldUsuario = oldUsuario )
+                
+                destinatario = "fp@catedu.es"
+                if SUBDOMAIN == "www":
+                    destinatario = alumnoSIGAD.getEmail().lower()
+                else:
+                    print("Debería haberse enviado a '", alumnoSIGAD.getEmail().lower(), "'." )
+
+                enviado = send_email( destinatario , "FP a distancia - Aragón", mensaje)
+
+                if enviado:
+                    num_emails_enviados = num_emails_enviados + 1
+                    print("num_emails_enviados: ", num_emails_enviados)
+                else:
+                    num_emails_no_enviados = num_emails_no_enviados + 1
+                    print("Ha fallado el envío del email a '", destinatario, "'. Total fallos: '", num_emails_no_enviados, "'")
+
                 break
         if not existe:
             alumnos_a_suspender.append(alumnoMoodle)
@@ -351,7 +371,7 @@ def main():
             matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
             nombre = return_text_for_html( alumno.getNombre() )
             apellidos = return_text_for_html( alumno.getApellidos() )
-            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso (lunes 27 de septiembre).<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
+            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.adistanciafparagon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
             
             destinatario = "fp@catedu.es"
             if SUBDOMAIN == "www":
@@ -374,7 +394,7 @@ def main():
                 matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
                 nombre = return_text_for_html( alumno.getNombre() )
                 apellidos = return_text_for_html( alumno.getApellidos() )
-                mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.adistanciafparagon.es/ se le han a&ntilde;adido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Recuerde que aunque ya disponga de un usuario y contrase&ntilde;a el acceso a los m&oacute;dulos podr&iacute;a no estar operativo hasta la fecha de comienzo oficial del curso.<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto )
+                mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.adistanciafparagon.es/ se le han a&ntilde;adido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.adistanciafparagon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto )
 
                 destinatario = "fp@catedu.es"
                 if SUBDOMAIN == "www":
