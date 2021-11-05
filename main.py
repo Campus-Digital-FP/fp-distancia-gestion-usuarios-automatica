@@ -44,6 +44,7 @@ def main():
     num_alumnos_no_creables = 0
     num_modulos_matriculados = 0
     num_matriculas_suspendidas = 0
+    num_matriculas_reactivadas = 0
     num_matriculas_borradas = 0
     num_alumnos_no_matriculados_en_cursos_inexistentes = 0
     num_emails_enviados = 0
@@ -234,6 +235,8 @@ def main():
     mensajes_email.append( get_date_time_for_humans() + " ***** <b>Alumnos a los que se ha suspendido su matrícula en algún curso pero no a ellos</b>:")
     mensajes_email.append("")
     for alumno_moodle in alumnos_moodle:
+        print(get_date_time_for_humans() + "*** Procesando alumno de Moodle ***")
+        print("-", alumno_moodle['username'] )
         userid = alumno_moodle['userid']
         # no recorro los no borrables
         if int(userid) in usuarios_moodle_no_borrables: 
@@ -241,18 +244,20 @@ def main():
         username = alumno_moodle['username']
         # Obtengo los cursos en que este alumno moodle está matriculado en moodle
         cursos_matriculado = get_cursos_en_que_esta_matriculado(moodle, userid)
+        print("Acualmente se encuentra matriculado en ", cursos_matriculado)
         # recorro los cursos en que el usuario de moodle está matriculado y miro si el usuario de sigad está matriculado en el curso o no
         for curso in cursos_matriculado:
+            print("Procesando curso ", curso)
             courseid = curso['courseid']
             course_shortname = curso['shortname']
             course_codes = course_shortname.split("-") # 0 centreid 1 siglas ciclo 2 codigo materia
 
             # Si el curso es el de ayuda omitir comprobación. Están matriculados vía cohorte
             if course_shortname == "ayuda":
-                break;
+                continue;
             # Si el curso es el de tutoría omitir comprobación. Están matriculados vía cohorte
             if course_codes[2].count("t") == 1:
-                break;
+                continue;
             
             for alumno in alumnos_sigad:
                 
@@ -359,6 +364,11 @@ def main():
                         print("El curso ", str(shortname_curso) , " no existe.", sep="")
                         mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " NO puede matricularse en "+ shortname_curso + " por que el curso NO existe.")
                         num_alumnos_no_matriculados_en_cursos_inexistentes = num_alumnos_no_matriculados_en_cursos_inexistentes + 1
+                    elif is_alumno_suspendido_en_curso(moodle, id_curso, id_alumno):
+                        reactiva_alumno_en_curso(moodle, id_alumno, id_curso)
+                        num_matriculas_reactivadas = num_matriculas_reactivadas + 1;
+                        mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " reactivada su matricula en "+ shortname_curso + ".")
+                        matriculado_en.append("- " + centro.get_centro() + " - " + ciclo.get_ciclo() + " - " + modulo.get_modulo() )
                     elif not is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
                         matricula_alumno_en_curso(moodle, id_alumno, id_curso)
                         num_modulos_matriculados = num_modulos_matriculados + 1
@@ -450,6 +460,7 @@ def main():
     mensajes_email.append("- Alumnos suspendidos por este script: " + str(num_alumnos_suspendidos) )
     mensajes_email.append("- Alumnos cuyo login ha sido modificado por este script: " + str(num_alumnos_modificado_login) )
     mensajes_email.append("- Cantidad de matriculas hechas en modulos: " + str(num_modulos_matriculados) )
+    mensajes_email.append("- Cantidad de matriculas reactivadas en modulos: " + str(num_matriculas_reactivadas) )
     mensajes_email.append("- Cantidad de matriculas suspendidas en modulos: " + str(num_matriculas_suspendidas) )
     mensajes_email.append("- Cantidad de matriculas borradas en modulos (solo en Agosto): " + str(num_matriculas_borradas) )
     mensajes_email.append("- Cantidad de matriculas no hechas por no existir el curso destino: " + str(num_alumnos_no_matriculados_en_cursos_inexistentes) )
@@ -795,6 +806,28 @@ def suspende_matricula_en_curso(moodle, id_alumno, id_curso):
     run_command( command, False )
     # Fin de suspende_matricula_en_curso
 
+def reactiva_alumno_en_curso(moodle, id_alumno, id_curso):
+    """
+    Dado un alumno y un curso reactiva su matrícula en el moodle dado
+    """
+    print("reactiva_alumno_en_curso(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                update mdl_user_enrolments ue 
+                set ue.status = 0 
+                where ue.userid = {id_alumno} and ue.enrolid in 
+                    (select e.id
+                    from mdl_enrol e 
+                    where e.courseid = 
+                        (select c.id 
+                        from mdl_course c 
+                        where c.id = {id_curso})  )
+            \"
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_alumno = id_alumno, id_curso = id_curso )
+    run_command( command, False )
+    # Fin de suspende_matricula_en_curso
+
 def matricula_alumno_en_curso(moodle, id_alumno, id_curso):
     """
     Dado un alumno y un curso los matricula en el moodle dado
@@ -814,6 +847,31 @@ def get_id_alumno_by_dni(moodle, alumno):
     id_alumno = run_moosh_command(moodle, cmd, True).rstrip()
     print("id_alumno: ", id_alumno)
     return id_alumno
+
+
+def is_alumno_suspendido_en_curso(moodle, id_curso, id_usuario):
+    """
+    Devuelve verdadero si el alumno dado está suspendido en el curso dado
+    """
+    print("is_alumno_suspendido_en_curso(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                SELECT ue.status -- suspendido = 1 activado = 0
+                FROM mdl_user_enrolments ue
+                JOIN mdl_enrol e ON ue.enrolid = e.id
+                where ue.userid = {id_usuario} and e.courseid = {id_curso} 
+            \" | tail -n +2
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_usuario = id_usuario, id_curso = id_curso )
+
+    is_alumno_suspendido_en_curso = run_command( command , True).rstrip()
+    
+    print("is_alumno_suspendido_en_curso: ", is_alumno_suspendido_en_curso)
+
+    if is_alumno_suspendido_en_curso == "1":
+        return True
+    return False
+    # End of is_alumno_suspendido_en_curso
 
 def is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
     """
