@@ -49,6 +49,7 @@ def main():
     num_alumnos_no_matriculados_en_cursos_inexistentes = 0
     num_emails_enviados = 0
     num_emails_no_enviados = 0
+    num_tutorias_suspendidas = 0
     #
     num_alumnos_pre_app = len(alumnos_moodle)
 
@@ -94,7 +95,7 @@ def main():
                             + ", mensaje: " + str(mensaje))
         else: # Error en la 1era llamada
             print("Error en la llamada al 1er web service")
-    
+
     ########################
     # Obtengo los alumnos (profesores no) que están suspendidos en moodle y miro si están en el fichero de SIGAD
     # Si están en el fichero de SIGAD los reactivo
@@ -421,6 +422,10 @@ def main():
                     num_emails_no_enviados = num_emails_no_enviados + 1
                     print("Ha fallado el envío del email a '", destinatario, "'. Total fallos: '", num_emails_no_enviados, "'")
 
+    # Evaluo alumnos con 2 tutorías o mas y los comparo con el fichero json origen a ver si están en las tutorías que les corresponde estar
+    # suspendo las matrículas de las tutorías que no corresponda
+    num_tutorias_suspendidas = eval_estudiantes_con_mas_de_1_tutorias(moodle, alumnos_sigad,mensajes_email)
+    
     # Listo alumnos que no se han podido crear
     mensajes_email.append("")
     mensajes_email.append( get_date_time_for_humans() + " <b>***** Alumnos que no se han podido crear</b>:")
@@ -461,7 +466,8 @@ def main():
     mensajes_email.append("- Alumnos cuyo login ha sido modificado por este script: " + str(num_alumnos_modificado_login) )
     mensajes_email.append("- Cantidad de matriculas hechas en modulos: " + str(num_modulos_matriculados) )
     mensajes_email.append("- Cantidad de matriculas reactivadas en modulos: " + str(num_matriculas_reactivadas) )
-    mensajes_email.append("- Cantidad de matriculas suspendidas en modulos: " + str(num_matriculas_suspendidas) )
+    mensajes_email.append("- Cantidad de matriculas suspendidas en modulos (no cuenta en las tutorías): " + str(num_matriculas_suspendidas) )
+    mensajes_email.append("- Cantidad de matriculas suspendidas en tutorías: " + str(num_tutorias_suspendidas) )
     mensajes_email.append("- Cantidad de matriculas borradas en modulos (solo en Agosto): " + str(num_matriculas_borradas) )
     mensajes_email.append("- Cantidad de matriculas no hechas por no existir el curso destino: " + str(num_alumnos_no_matriculados_en_cursos_inexistentes) )
     mensajes_email.append("- Cantidad de emails enviados: " + str(num_emails_enviados) )
@@ -484,6 +490,163 @@ def main():
 #################################
 # Funciones
 #################################
+
+def eval_estudiantes_con_mas_de_1_tutorias(moodle, alumnos_sigad, mensajes_email):
+    """
+    Procesa a los estudiantes de Moodle que están matriculados en 2 o mas tutorías y verifica si en el 
+    fichero de JSON original también están en 2 o mas ciclos
+    """
+    print("eval_estudiantes_con_mas_de_1_tutorias(...)")
+    estudiantes = get_estudiantes_con_mas_de_1_tutorias(moodle)
+    num_tutorias_suspendidas = 0
+    # Aquellos estudiantes que tengan 2 o mas tutorías los busco en los datos que han llegado de 
+    # SIGAD y compruebo si están dónde deberían estar o no y los mantengo en la cohorte o no
+    print("Estudiantes con 2 tutorías o mas")
+    mensajes_email.append("")
+    mensajes_email.append( get_date_time_for_humans() + " <b>***** Alumnos con mas de 1 tutoría</b>:")
+    mensajes_email.append("")
+    for estudianteMoodle in estudiantes:
+        print("- Evaluando estudiante: ", estudianteMoodle)
+        mensajes_email.append("- Evaluando a: " + estudianteMoodle['username'])
+        encontrado = False
+        for alumno_sigad in alumnos_sigad:
+            # print("alumno_sigad.getDocumento()", alumno_sigad.getDocumento())
+            if estudianteMoodle['username'] is not None \
+                    and alumno_sigad.getDocumento() is not None \
+                    and estudianteMoodle['username'].lower() == alumno_sigad.getDocumento().lower():
+                print("Estudiante ENCONTRADO en SIGAD")
+                
+                cursos = get_cursos_de_tutoria_en_que_esta_matriculado_un_alumno(moodle, estudianteMoodle['userid'])
+                print("Cursos de tutoría en que está matriculado el alumno en Moodle: ", cursos)
+                
+                # Recorrer los cursos en que está matriculado en SIGAD y su shortname tiene una t
+                # Por cada curso ver si en los datos de SIGAD estámatriculado en ese centro y ciclo
+                for curso in cursos:
+                    print("- Evaluando si en SIGAD está en Curso: ", str(curso))
+                    
+                    codCentro = curso['cshortname'].split("-")[0]
+                    codCiclo = curso['cshortname'].split("-")[1]
+                    le_correspone_la_tutoria = False
+                    # Buscar en los datos de SIGAD si el curso está matriculado en ese centro y ciclo
+                    for centro in alumno_sigad.getCentros():
+                        print("centro.get_codigo_centro(): ", centro.get_codigo_centro())
+                        print("codCentro:", codCentro)
+                        if centro.get_codigo_centro() == codCentro:
+                            for ciclo in centro.getCiclos():
+                                print("ciclo.get_siglas_ciclo: ", ciclo.get_siglas_ciclo())
+                                print("codCiclo:", codCiclo)
+                                if ciclo.get_siglas_ciclo() == codCiclo:
+                                    le_correspone_la_tutoria = True
+                                    break
+                    # Si no está matriculado en ese centro y ciclo, lo desmatriculo de esa tutoria
+                    if not le_correspone_la_tutoria:
+                        print("No está matriculado en ese centro (",codCentro,") y ciclo(",codCiclo,"). Suspendiendo matrícula de esa tutoría.")
+                        mensajes_email.append("No está matriculado en ese centro ("+codCentro+") y ciclo ("+codCiclo+"). Suspendiendo matrícula de esa tutoría.")
+                        suspende_matricula_en_curso(moodle, estudianteMoodle['userid'], curso['courseid'])
+                        num_tutorias_suspendidas += 1
+                        print("suspendida matrícula de curso: " + curso['courseid'])
+                        mensajes_email.append("suspendida matrícula de curso: " + curso['courseid'])
+                    else:
+                        print("Está matriculado correctamente en esa tutoría ",codCentro, codCiclo, ". No hago nada")
+                        mensajes_email.append("Está matriculado correctamente en esa tutoría ("+codCentro+"-"+codCiclo+"). No hago nada")
+                # 
+                encontrado = True
+                break
+        if not encontrado:
+            print("Estudiante NO ENCONTRADO en SIGAD")
+            mensajes_email.append("Estudiante NO ENCONTRADO en SIGAD")
+
+    return num_tutorias_suspendidas
+    # raise Exception("Fin de eval_estudiantes_con_mas_de_1_tutorias") # para testing
+
+def get_estudiantes_con_mas_de_1_tutorias(moodle):
+    """
+    Devuelve una lista de estudiantes que tienen más de 2 tutorias
+    """
+    
+    print("get_estudiantes_con_mas_de_1_tutorias(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                SELECT
+                    u.id, u.username
+                                                
+                FROM
+                    mdl_role_assignments ra
+                    JOIN mdl_user u ON u.id = ra.userid
+                    JOIN mdl_role r ON r.id = ra.roleid
+                    JOIN mdl_context cxt ON cxt.id = ra.contextid
+                    JOIN mdl_course c ON c.id = cxt.instanceid
+
+                WHERE ra.userid = u.id
+                                                
+                    AND ra.contextid = cxt.id
+                    AND cxt.contextlevel =50
+                    AND cxt.instanceid = c.id
+                    AND  roleid = 5
+                    and c.shortname like '%t'
+                    AND u.username not like 'prof%'
+
+                group by u.id
+                having  count(*) > 1
+            \" | tail -n +2
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME )
+    
+    cursos_en_los_que_esta_matriculado = run_command( command, True ).rstrip()
+    
+    estudiantes = []    
+    
+    data_s = io.StringIO(cursos_en_los_que_esta_matriculado).read()
+    lines = data_s.splitlines()
+    estudiante = [
+        {
+            "userid": line.split()[0],
+            "username": line.split()[1],
+        }
+        for line in lines
+        # if line.split()[-1].endswith("moodle_1")
+    ]
+    estudiantes.extend(estudiante)
+    
+
+    return estudiantes
+def get_cursos_de_tutoria_en_que_esta_matriculado_un_alumno(moodle, id_alumno):
+    """
+    Devuelve una lista los cursos de tutoríaen que un alumno está matriculado sin tener la matrícula suspendida
+    """
+    print("get_cursos_de_tutoria_en_que_esta_matriculado_un_alumno(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                SELECT c.id, ue.userid, c.shortname, c.fullname
+                FROM mdl_user_enrolments ue 
+                INNER JOIN mdl_enrol e ON e.id = ue.enrolid 
+                INNER JOIN mdl_course c ON e.courseid = c.id
+                where ue.status = 0 and ue.userid = {id_alumno} and c.shortname like '%t';
+            \" | tail -n +2
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_alumno = id_alumno )
+
+    alumnos_con_matriculas_suspendidas_en_curso = run_command( command , True).rstrip()
+    
+    matriculas = []    
+    
+    data_s = io.StringIO(alumnos_con_matriculas_suspendidas_en_curso).read()
+    lines = data_s.splitlines()
+    matricula = [
+        {
+            "courseid": line.split()[0],
+            "studentid": line.split()[1],
+            "cshortname": line.split()[2],
+            "cfullname": line.split()[3],
+        }
+        for line in lines
+        # if line.split()[-1].endswith("moodle_1")
+    ]
+    matriculas.extend(matricula)
+    print("matriculas: ", matriculas )
+
+    return matriculas
+    # End of get_cursos_de_tutoria_en_que_esta_matriculado_un_alumno
 
 def return_text_for_html(cadena):
     """
@@ -598,7 +761,7 @@ def get_cursos_en_que_esta_matriculado_un_alumno(moodle, id_alumno):
 
     command = '''\
             mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
-                SELECT c.id, ue.userid
+                SELECT c.id, ue.userid, c.shortname, c.fullname
                 FROM mdl_user_enrolments ue 
                 INNER JOIN mdl_enrol e ON e.id = ue.enrolid 
                 INNER JOIN mdl_course c ON e.courseid = c.id
@@ -616,6 +779,8 @@ def get_cursos_en_que_esta_matriculado_un_alumno(moodle, id_alumno):
         {
             "courseid": line.split()[0],
             "studentid": line.split()[1],
+            "cshortname": line.split()[2],
+            "cfullname": line.split()[3],
         }
         for line in lines
         # if line.split()[-1].endswith("moodle_1")
