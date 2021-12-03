@@ -27,8 +27,11 @@ class Ciclo:
             + ", codigoCiclo: " + str(self.__codigoCiclo) \
             + ", ciclo: "  + str(self.__ciclo) \
             + ", siglasCiclo: " + str(self.__siglasCiclo)
-
-        for modulo in self.__modulos:
-            cadena = cadena + "\n\t\t\t" + repr(modulo)
+        
+        if self.__modulos is not None:
+            for modulo in self.__modulos:
+                cadena += "\n\t\t\t" + repr(modulo)
+        else:
+            cadena += "\n\t\t\t" + "No tiene módulos"
         
         return cadena
