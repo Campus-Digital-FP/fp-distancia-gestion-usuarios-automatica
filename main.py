@@ -475,7 +475,7 @@ def main():
     mensajes_email.append("- Cantidad de matriculas hechas en modulos: " + str(num_modulos_matriculados) )
     mensajes_email.append("- Cantidad de matriculas reactivadas en modulos: " + str(num_matriculas_reactivadas) )
     mensajes_email.append("- Cantidad de matriculas suspendidas en modulos (no cuenta en las tutorías): " + str(num_matriculas_suspendidas) )
-    mensajes_email.append("- Cantidad de matriculas suspendidas en tutorías: " + str(num_tutorias_suspendidas) )
+    mensajes_email.append("- Cantidad de matriculas borradas en tutorías (vía eliminación estudiante de cohorte): " + str(num_tutorias_suspendidas) )
     mensajes_email.append("- Cantidad de matriculas borradas en modulos (solo en Agosto): " + str(num_matriculas_borradas) )
     mensajes_email.append("- Cantidad de matriculas no hechas por no existir el curso destino: " + str(num_alumnos_no_matriculados_en_cursos_inexistentes) )
     mensajes_email.append("- Cantidad de emails enviados: " + str(num_emails_enviados) )
@@ -483,7 +483,7 @@ def main():
     ########################
     # Envío email resumen de lo hecho por email a responsables
     ########################
-    texto = "<br/>".join( map(return_text_for_html, mensajes_email) )
+    texto = "<br/>\n".join( map(return_text_for_html, mensajes_email) )
     #texto = """{}""".format("<br/>".join(mensajes_email[1:]))
     
     #
@@ -566,12 +566,13 @@ def eval_estudiantes_con_mas_de_1_tutorias(moodle, alumnos_sigad, mensajes_email
                                     break
                     # Si no está matriculado en ese centro y ciclo, lo desmatriculo de esa tutoria
                     if not le_correspone_la_tutoria:
-                        print("No está matriculado en ese centro (",codCentro,") y ciclo(",codCiclo,"). Suspendiendo matrícula de esa tutoría.")
-                        mensajes_email.append("No está matriculado en ese centro ("+codCentro+") y ciclo ("+codCiclo+"). Suspendiendo matrícula de esa tutoría.")
-                        suspende_matricula_en_curso(moodle, estudianteMoodle['userid'], curso['courseid'])
+                        print("No está matriculado en ese centro (",codCentro,") y ciclo(",codCiclo,"). Borrando matrícula de esa tutoría vía eliminación del estddiante de la cohorte.")
+                        mensajes_email.append("No está matriculado en ese centro ("+codCentro+") y ciclo ("+codCiclo+"). Borrando matrícula de esa tutoría vía eliminación del estddiante de la cohorte.")
+                        cohort_id = get_cohort_id(moodle, codCentro+"-"+codCiclo)
+                        borra_alumno_de_cohorte(moodle, cohort_id, estudianteMoodle['userid'])
                         num_tutorias_suspendidas += 1
-                        print("suspendida matrícula de curso: " + curso['courseid'])
-                        mensajes_email.append("suspendida matrícula de curso: " + curso['courseid'])
+                        print("borrado estudiante de cohorte: " + codCentro+"-"+codCiclo + "(" + str(cohort_id) + ")")
+                        mensajes_email.append("borrado estudiante de cohorte: " + codCentro+"-"+codCiclo + "(" + str(cohort_id) + ")")
                     else:
                         print("Está matriculado correctamente en esa tutoría ",codCentro, codCiclo, ". No hago nada")
                         mensajes_email.append("Está matriculado correctamente en esa tutoría ("+codCentro+"-"+codCiclo+"). No hago nada")
@@ -636,6 +637,7 @@ def get_estudiantes_con_mas_de_1_tutorias(moodle):
     
 
     return estudiantes
+
 def get_cursos_de_tutoria_en_que_esta_matriculado_un_alumno(moodle, id_alumno):
     """
     Devuelve una lista los cursos de tutoríaen que un alumno está matriculado sin tener la matrícula suspendida
@@ -952,6 +954,19 @@ def matricula_alumno_en_cohorte_alumnado(moodle, id_alumno):
     cmd = "moosh -n cohort-enrol -u " + id_alumno + " \"alumnado\""
     run_moosh_command(moodle, cmd, False)
 
+def borra_alumno_de_cohorte(moodle, id_cohort, id_alumno):
+    """
+    Borra alumno de cohorte
+    """
+    print("borra_alumno_de_cohorte(...)")
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                delete from mdl_cohort_members
+                where cohortid = {id_cohort} and userid = {id_alumno}
+            \"
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_cohort = id_cohort, id_alumno = id_alumno )
+    run_command( command, False )   
+
 def desmatricula_alumno_de_todas_cohortes(moodle, id_alumno):
     """
     Elimina al alumno dado de la cohorte alumnado
@@ -996,10 +1011,7 @@ def suspende_matricula_en_curso(moodle, id_alumno, id_curso):
                 where ue.userid = {id_alumno} and ue.enrolid in 
                     (select e.id
                     from mdl_enrol e 
-                    where e.courseid = 
-                        (select c.id 
-                        from mdl_course c 
-                        where c.id = {id_curso})  )
+                    where e.courseid = {id_curso}  )
             \"
             '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_alumno = id_alumno, id_curso = id_curso )
     run_command( command, False )
@@ -1070,6 +1082,27 @@ def is_alumno_suspendido_en_curso(moodle, id_curso, id_usuario):
     if is_alumno_suspendido_en_curso == "1":
         return True
     return False
+    # End of is_alumno_suspendido_en_curso
+
+def get_cohort_id(moodle, name):
+    """
+    Devuelve el id de la cohorte cuyo nombre sea el dado
+    """
+    print("get_cohort_id(...)")
+
+    command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                SELECT id
+                FROM mdl_cohort
+                where name = '{name}' 
+            \" | tail -n +2
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, name = name )
+
+    cohort_id = run_command( command , True).rstrip()
+    
+    print("cohort_id: ", cohort_id)
+    
+    return cohort_id
     # End of is_alumno_suspendido_en_curso
 
 def is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
