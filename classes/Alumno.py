@@ -45,11 +45,11 @@ class Alumno:
     def __repr__(self):
         cadena =  "idAlumno: " + str(self.__idAlumno) \
             + ", idTipoDocumento: " + str(self.__idTipoDocumento) \
-            + ", documento: " + str(self.__documento) \
+            + ", documento: '" + str(self.__documento) + "', " \
             + ", nombre: " + str(self.__nombre) \
             + ", pape: " + str(self.__pape) \
             + ", sape " + str(self.__sape) \
-            + ", email: " + str(self.__email)
+            + ", email: '" + str(self.__email) + "'"
             
         for centro in self.__centros:
             cadena = cadena +  "\n\t" + repr(centro)
