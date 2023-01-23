@@ -64,63 +64,10 @@ def main():
     curso_academico = get_curso_para_REST()
     
     #########################################
-    # Cuando se actualiza en el entorno pre se realiza la consulta al WebService de SIGAD
-    # Cuando se actualiza en el entorno www se utiliza el último archivo que se generó en la llamada al WebService
-    # De este modo se pretende evitar que cambios ocurridos en ese lapso de 24 h pueda causar problemas
+    # Cuando se actualiza en el entorno pre o www se realiza la consulta al WebService de SIGAD
     # --
     # Transformo JSON de SIGAD a lista
     #########################################
-
-    #if SUBDOMAIN == "www":
-        # Para entorno www utilizo el último fichero generado ( ls -tr *.ws2.log | tail -n 1 )
-
-        # Busco cual es el último fichero en logs que contiene el json devuelto por pre
-        # TODO
-
-        # Abro el fichero
-        # resp_data = abre_fichero("20220926-030513.predesarrollo.ws2.log")
-    """
-    print("--1--") # TODO: Borrar
-    print("--1--") # TODO: Borrar
-    print("--1--") # TODO: Borrar
-    print("--1--") # TODO: Borrar
-    sigad_file = open(PATH + "/logs/" + "20220926-030513.predesarrollo.ws2.log", "r") 
-    print("type of sigad_file: ", type(sigad_file))
-    sigad_data = sigad_file.read()
-    print("type of sigad_data: ", type(sigad_data))
-    sigad_data = sigad_data[1:]
-    sigad_data = sigad_data[1:]
-    sigad_data = sigad_data[:-1]
-        \\
-    print("--2--") # TODO: Borrar
-    print("--2--") # TODO: Borrar
-    print("--2--") # TODO: Borrar
-    print("--2--") # TODO: Borrar
-    print(sigad_data)
-    print("--2-A-") # TODO: Borrar
-    print("--2-A-") # TODO: Borrar
-    print("--2-A-") # TODO: Borrar
-    parsed_json = json.loads( sigad_data )
-    print("--3--") # TODO: Borrar
-    print("--3--") # TODO: Borrar
-    print("--3--") # TODO: Borrar
-    print("--3--") # TODO: Borrar
-    procesaJsonEstudiantes(parsed_json, alumnos_sigad)
-    
-    
-    print("resp_data:", resp_data) # TODO: Borrar
-    print("--1--") # TODO: Borrar
-    # Proceso el fichero
-    parsed_json = json.loads(resp_data)
-    print("--2--") # TODO: Borrar
-
-    procesaJsonEstudiantes(parsed_json, alumnos_sigad)
-    print("--3--") # TODO: Borrar
-    print("y:", y) # TODO: Borrar
-    
-else:
-    """
-    # Para entorno pre llamo al WS
 
     # Creo la conexión para la 1era llamada
     conexion_1er_ws = Conexion(url1, path1 + curso_academico, usuario1, password1, method1)
@@ -193,7 +140,7 @@ else:
             if alumnoSIGAD.getDocumento() is None:
                 continue
                 
-            if alumnoMoodle['username'].lower() == alumnoSIGAD.getDocumento().lower():
+            if alumnoMoodle['username'].lower().strip() == alumnoSIGAD.getDocumento().lower().strip():
                 existe = True
                 # Si el usuario está en Moodle y en SIGAD miro si en SIGAD sigue teniendo el mismo email
                 # si no coinciden el email en SIGAD y en Moodle entonces actualizo en Moodle al email que haya en SIGAD
@@ -237,10 +184,10 @@ else:
             if alumnoSIGAD.getEmail() is not None \
                     and alumnoMoodle['email'].lower() == alumnoSIGAD.getEmail().lower():
                 existe = True
-                print("- Alumno a actualizar su login por coincidencia de email: ", repr(alumnoMoodle) )
-                print("habría que ponerle de login ", alumnoSIGAD.getDocumento() )
+                print("- Alumno a actualizar su login por coincidencia de email: '", repr(alumnoMoodle),"'", sep="" )
+                print("habría que ponerle de login '", alumnoSIGAD.getDocumento(),"'", sep="" )
                 userid = alumnoMoodle['userid']
-                username_nuevo = alumnoSIGAD.getDocumento().lower()
+                username_nuevo = alumnoSIGAD.getDocumento().lower().strip()
                 update_moodle_username(moodle, userid, username_nuevo)
                 num_alumnos_modificado_login = num_alumnos_modificado_login + 1
                 mensajes_email.append("- Al alumno que tenia usuario de acceso " + alumnoMoodle['username'] + \
@@ -255,7 +202,7 @@ else:
                 if SUBDOMAIN == "www":
                     destinatario = alumnoSIGAD.getEmail().lower()
                 else:
-                    print("Debería haberse enviado a '", alumnoSIGAD.getEmail().lower(), "'." )
+                    print("Debería haberse enviado a '", alumnoSIGAD.getEmail().lower(), "'.", sep="" )
 
                 enviado = send_email( destinatario , "FP a distancia - Aragón", mensaje)
 
@@ -343,7 +290,7 @@ else:
                 en_sigad_esta_matriculado = False
                 if alumno.getDocumento() is not None and alumno.getDocumento().lower() == username.lower(): # he encontrado al alumno en SIGAD
                     print("-", repr(alumno) )
-                    print("Actualmente el alumno", username, "está ahora matriculado en moodle en el curso", course_shortname, ". Vamos a comprobar si en SIGAD también está")
+                    print("El alumno", username, "está actualmente matriculado en moodle en el curso", course_shortname, ". Vamos a comprobar si en SIGAD también está")
                     
                     centros = alumno.getCentros()
                     print("*Mirando centros del alumno")
@@ -448,11 +395,13 @@ else:
                             mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " NO puede matricularse en "+ shortname_curso + " por que el curso NO existe.")
                             num_alumnos_no_matriculados_en_cursos_inexistentes = num_alumnos_no_matriculados_en_cursos_inexistentes + 1
                         elif is_alumno_suspendido_en_curso(moodle, id_curso, id_alumno):
+                            print("El alumno ", str(id_alumno) , " está suspendido en el curso ", str(shortname_curso),". Se le reactiva.", sep="")
                             reactiva_alumno_en_curso(moodle, id_alumno, id_curso)
                             num_matriculas_reactivadas = num_matriculas_reactivadas + 1;
                             mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " reactivada su matricula en "+ shortname_curso + ".")
                             matriculado_en.append("- " + centro.get_centro() + " - " + ciclo.get_ciclo() + " - " + modulo.get_modulo() )
                         elif not is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
+                            print("El alumno ", str(id_alumno) , " NO está matriculado en el curso ", str(shortname_curso),". Se le matricula.", sep="")
                             matricula_alumno_en_curso(moodle, id_alumno, id_curso)
                             num_modulos_matriculados = num_modulos_matriculados + 1
                             mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " matriculado en "+ shortname_curso + ".")
@@ -824,7 +773,7 @@ def get_cursos_en_que_esta_matriculado(moodle, id_usuario):
     """
     Devuelve una lista de cursos en los que el alumno está matriculado
     """
-    print("get_cursos_en_que_esta_matriculado(...)")
+    print("get_cursos_en_que_esta_matriculado(id_usuario: ", id_usuario, ")", sep="")
 
     command = '''\
             mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
@@ -841,7 +790,9 @@ def get_cursos_en_que_esta_matriculado(moodle, id_usuario):
     cursos = []    
     
     data_s = io.StringIO(cursos_en_los_que_esta_matriculado).read()
+    print("data_s: ", data_s, sep="")
     lines = data_s.splitlines()
+    print("Número de líneas: ", len(lines), sep="")
     curso = [
         {
             "courseid": line.split()[0],
@@ -935,7 +886,7 @@ def update_moodle_username(moodle, userid, username_nuevo):
     """
     En el moodle dado actualiza el usuario userid a un nuevo username
     """
-    print("update_moodle_username(...)")
+    print("update_moodle_username(userid: '", userid, "', username_nuevo: '",username_nuevo,"')", sep="")
 
     command = '''\
             mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
@@ -1008,6 +959,7 @@ def get_moodle(subdomain):
     Devuelve un objeto como el siguiente:
     #
     """
+    print("get_moodle(subdomain: ",subdomain,")", sep="")
     # urls = []
     
     data = os.popen(f"docker ps | grep {subdomain}").read()
@@ -1136,7 +1088,7 @@ def reactiva_alumno_en_curso(moodle, id_alumno, id_curso):
             \"
             '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_alumno = id_alumno, id_curso = id_curso )
     run_command( command, False )
-    # Fin de suspende_matricula_en_curso
+    # Fin de reactiva_alumno_en_curso
 
 def matricula_alumno_en_curso(moodle, id_alumno, id_curso):
     """
@@ -1210,7 +1162,7 @@ def is_alumno_matriculado_en_curso(moodle, id_alumno, id_curso):
     - True si el id_alumno existe en el curso
     - False si el id_alumno no existe en el curso
     """
-    print("is_alumno_matriculado_en_curso(...)")
+    print("is_alumno_matriculado_en_curso(id_alumno: ", id_alumno, ", id_curso: ", id_curso, ")", sep="" )
 
     cmd = "moosh -n user-list --course " + id_curso + " | grep \"(" + id_alumno + ")\" "
     out = run_moosh_command(moodle, cmd, True).rstrip()
