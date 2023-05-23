@@ -33,7 +33,8 @@ def main():
     mensajes_email.append("<b>ENTORNO:</b>")
     mensajes_email.append(SUBDOMAIN)
     mensajes_email.append("<b>RESUMEN DETALLADO</b>")
-    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] # ids de users creados en deploy que no hay que borrar
+    # ids de users creados en deploy que no hay que borrar
+    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33] 
     # 
     moodle = get_moodle(SUBDOMAIN)[0]
     alumnos_sigad = []
@@ -413,6 +414,7 @@ def main():
             matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
             nombre = return_text_for_html( alumno.getNombre() )
             apellidos = return_text_for_html( alumno.getApellidos() )
+            # TODO: Añadir enlace a videotutorial explicando funcionamiento de la plataforma y al curso de ayuda.
             mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.adistanciafparagon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.adistanciafparagon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.adistanciafparagon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP distancia Arag&oacute;n'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto )
             
             destinatario = "fp@catedu.es"
