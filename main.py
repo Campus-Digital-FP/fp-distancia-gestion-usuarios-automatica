@@ -969,11 +969,11 @@ def get_moodle(subdomain):
     lines = data_s.splitlines()
     container = [
         {
-            "url": line.split()[-1].replace("adistanciafparagones_moodle_1", ".adistanciafparagon.es"),
+            "url": line.split()[-1].replace("adistanciafparagones-moodle-1", ".adistanciafparagon.es"),
             "container_name": line.split()[-1],
         }
         for line in lines
-        if line.split()[-1].endswith("moodle_1")
+        if line.split()[-1].endswith("moodle-1")
     ]
     # urls.extend(container)
 
