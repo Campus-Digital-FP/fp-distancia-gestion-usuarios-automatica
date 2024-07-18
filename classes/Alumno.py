@@ -1,17 +1,22 @@
+
+from Util import *
+
 class Alumno:
     NAME = "ALUMNO"
 
     def __init__(
             self, idAlumno, idTipoDocumento, documento, nombre, pape,
-            sape, email ):
+            sape, emailSigad ):
         self.__idAlumno = idAlumno
         self.__idTipoDocumento = idTipoDocumento # tipo de documento
         self.__documento = documento #numero de DNI, NIE,...
         self.__nombre = nombre
         self.__pape = pape
         self.__sape = sape
-        self.__email = email
+        self.__emailSigad = emailSigad
         self.__centros = None
+        # Campo calculado
+        self.__emailDominio = creaEmailsDominio(nombre, pape, sape, documento)
 
     def addCentro(self, centro):
         if self.__centros is None:
@@ -36,8 +41,11 @@ class Alumno:
     def getSape(self):
         return self.__sape
 
-    def getEmail(self):
-        return self.__email
+    def getEmailSigad(self):
+        return self.__emailSigad
+
+    def getEmailDominio(self):
+        return self.__emailDominio
 
     def getCentros(self):
         return self.__centros
@@ -49,7 +57,8 @@ class Alumno:
             + ", nombre: " + str(self.__nombre) \
             + ", pape: " + str(self.__pape) \
             + ", sape " + str(self.__sape) \
-            + ", email: '" + str(self.__email) + "'"
+            + ", emailSigad: '" + str(self.__emailSigad) + "'" \
+            + ", emailDominio: '" + str(self.__emailDominio) + "'"
             
         for centro in self.__centros:
             cadena = cadena +  "\n\t" + repr(centro)

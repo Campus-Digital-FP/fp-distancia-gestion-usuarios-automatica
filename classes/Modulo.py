@@ -1,8 +1,10 @@
+from Util import *
+
 class Modulo:
     NAME="MODULO"
 
     def __init__(self, idMateria, modulo, siglasModulo):
-        self.__idMateria = idMateria
+        self.__idMateria = conversionLOFPaLOE(idMateria)
         self.__modulo = modulo
         self.__siglasModulo = siglasModulo
 
