@@ -1,6 +1,7 @@
 !gitignore
 Config.py
 Config-predesarrollo.py
+Config-test.py
 Config-www.py
 .vscode/*
 __pycache__/*
