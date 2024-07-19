@@ -27,6 +27,7 @@ from email import encoders
 def main():
     #
     mensajes_email = []
+    csv = []
     #
     mensajes_email.append("<html><head><title></title></head><body>")
     mensajes_email.append("<h1>" + get_date_time_for_humans() + " Comenzamos:</h1>")
@@ -369,7 +370,13 @@ def main():
                 mensajes_email.append("- Alumno " + alumno.getDocumento() + " creado.")
                 matricula_alumno_en_cohorte_alumnado(moodle, id_alumno)
                 alumno_es_nuevo = True
-                # TODO: añadirlo al CSV de creación de cuentas o tratar de crearlo vía API de google
+                # añadirlo al CSV de creación de cuentas 
+                # TODO: tratar de crearlo vía API de google
+                # https://support.google.com/a/answer/40057?hl=es&p=bulk_add_users&rd=1
+                # First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email
+                csv.append( alumno.getNombre() + "," + alumno.getApellidos() + "," + alumno.getEmailDominio() + "," + password + ",,/Alumnado," + alumno.getEmail() + "," + alumno.getEmail())
+
+
             except ValueError as e:
                 usuarios_no_creables.append(alumno)
                 continue
@@ -519,7 +526,8 @@ def main():
     # Envío email resumen de lo hecho por email a responsables
     ########################
     texto = "<br/>\n".join( map(return_text_for_html, mensajes_email) )
-    #texto = """{}""".format("<br/>".join(mensajes_email[1:]))
+
+    texto = texto + "<br/>\n".join( map(return_text_for_html, csv) )
     
     #
     print("Comenzamos con el fichero")
@@ -916,13 +924,11 @@ def update_moodle_email_sigad(userid, email_nuevo):
 
     command = '''\
             mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
-                update mdl_user  
-                set email = '{email_nuevo}'
-                WHERE id = {userid}
+                update mdl_user_info_data  
+                set data = '{email_nuevo}'
+                WHERE fieldid = 4 and userid = = {userid}
             \"
             '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, email_nuevo = email_nuevo, userid = userid )
-    # TODO: hay que actualizar su email de otros campos, el email sigad
-    # update mdl_user_info_data set data = '{email_nuevo}' where fieldid = 4 and userid = {userid};
 
     run_command( command, False )
 
@@ -1341,16 +1347,32 @@ def get_alumnos_moodle_no_borrados(moodle):
         {
             "username": line.split()[0],
             "userid": line.split()[1].replace("(","").replace("),",""),
-            "email": line.split()[2].replace(",",""),
+            "email": line.split()[2].replace(",",""), # email del dominio google
+            "email_sigad": "", # email de sigad
         }
-        # TODO: obtener el email de otros campos que es el que está en SIGAD y guardarlo en el alumno como email_sigad
-        # select data from mdl_user_info_data where fieldid = 4 and userid = XXX;
         for line in lines
         # if line.split()[-1].endswith("moodle_1")
     ]
     alumnos.extend(alumno)
-    
 
+    # Recorro cada alumno y le añado el email de sigad
+    for al in alumnos:
+        
+        command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                SELECT data
+                FROM mdl_user_info_data
+                where fieldid = 4 and userid = {id_usuario}
+            \" | tail -n +2
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, id_usuario = al["userid"] )
+
+        email_sigad = run_command( command , True).rstrip()
+    
+        print("email_sigad: ", email_sigad)
+
+        al["email_sigad"] = email_sigad
+    
+    # Devuelvo el listado de alumnos que cumplen las condiciones
     return alumnos
 
 def get_cursos(moodle):
@@ -1519,8 +1541,17 @@ def crearAlumnoEnMoodle(moodle, alumno, password):
 
         print("idUser: '",idUser,"'")
 
-        # TODO: hay que editar al usuario recién creado y en otros campos, en email sigad, meterle el getEmailSigad
-        # insert into mdl_user_info_data (userid, fieldid, data) values (idUser, 4, alumno.getEmailSigad());
+        # Al usuario recién creado le añadimos el email de SIGAD en otros campos
+
+        command = '''\
+            mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
+                insert into mdl_user_info_data (userid, fieldid, data) 
+                values 
+                ({idUser}, 4, {email_sigad})
+            \"
+            '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, idUser = idUser, email_sigad = alumno.getEmailSigad() )
+
+        run_command( command, False )
 
         return idUser
     else:
