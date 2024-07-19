@@ -374,7 +374,7 @@ def main():
                 # TODO: tratar de crearlo vía API de google
                 # https://support.google.com/a/answer/40057?hl=es&p=bulk_add_users&rd=1
                 # First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email
-                csv.append( alumno.getNombre() + "," + alumno.getApellidos() + "," + alumno.getEmailDominio() + "," + password + ",,/Alumnado," + alumno.getEmail() + "," + alumno.getEmail())
+                csv.append( alumno.getNombre() + "," + alumno.getApellidos() + "," + alumno.getEmailDominio() + "," + password + ",,/Alumnado,," + alumno.getEmail())
 
 
             except ValueError as e:
