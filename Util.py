@@ -11,6 +11,7 @@ def creaEmailsDominio(nombre, pape, sape, documento):
     pape = pape.replace(' ', '')
     pape = eliminar_tildes_y_enes(pape)
     
+    # TODO: del sape dejar solo las iniciales
     sape = sape.lower()
     sape = sape.replace(' ', '')
     sape = eliminar_tildes_y_enes(sape)
@@ -52,8 +53,8 @@ def conversionLOFPaLOE(idMateria):
         return "5114"
     elif idMateria == "14640": # Inglés profesional (GM)
         return "5111"
-    elif idMateria == "14642": # Itinerario personal para la empleabilidad I
-        return "5373" # FOL
+#    elif idMateria == "14642": # Itinerario personal para la empleabilidad I
+#        return "5373" # FOL
     elif idMateria == "14644": # Operaciones administrativas de compra-venta
         return "5365"
     elif idMateria == "14646": # Técnica contable
@@ -86,8 +87,8 @@ def conversionLOFPaLOE(idMateria):
         return "5194"
     elif idMateria == "14679": # Inglés profesional
         return "5193"
-    elif idMateria == "14681": # Itinerario personal para la empleabilidad I
-        return "5403" # FOL
+#    elif idMateria == "14681": # Itinerario personal para la empleabilidad I
+#        return "5403" # FOL
     elif idMateria == "14683": # Ofimática y proceso de la información
         return "5295"
     elif idMateria == "14685": # Proceso integral de la actividad comercial
@@ -158,8 +159,8 @@ def conversionLOFPaLOE(idMateria):
 #        return ""
     elif idMateria == "16695": # Inglés profesional (GM)
         return "5359" # Lengua extranjera profesional: inglés 1
-    elif idMateria == "16697": # Itinerario personal para la empleabilidad I
-        return "5355" # FOL
+#    elif idMateria == "16697": # Itinerario personal para la empleabilidad I
+#        return "5355" # FOL
     elif idMateria == "16699": # Montaje y mantenimiento de equipo
         return "5347"
     elif idMateria == "16701": # Redes locales
@@ -200,8 +201,8 @@ def conversionLOFPaLOE(idMateria):
         return "13945"
     elif idMateria == "15342": # Inglés profesional (GM)
         return "13944" # Inglés
-    elif idMateria == "15344": # Itinerario personal para la empleabilidad I
-        return "13946" # FOL
+#    elif idMateria == "15344": # Itinerario personal para la empleabilidad I
+#        return "13946" # FOL
     elif idMateria == "15346": # Marketing en la actividad comercial
         return "13943"
     elif idMateria == "15348": # Procesos de venta
@@ -240,8 +241,8 @@ def conversionLOFPaLOE(idMateria):
         return "5407"
     elif idMateria == "15380": # Inglés profesional
         return "5405" # Inglés
-    elif idMateria == "15382": # Itinerario personal para la empleabilidad I
-        return "5417" # FOL
+#    elif idMateria == "15382": # Itinerario personal para la empleabilidad I
+#        return "5417" # FOL
     elif idMateria == "15384": # Logística de almacenamiento
         return "5408"
     elif idMateria == "15386": # Transporte internacional de mercancías
@@ -279,8 +280,8 @@ def conversionLOFPaLOE(idMateria):
         return "7913" # Inglés
     elif idMateria == "15416": # Investigación comercial ( Virtual )
         return "7926"
-    elif idMateria == "15418": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "8412" # FOL
+#    elif idMateria == "15418": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "8412" # FOL
     elif idMateria == "15420": # Marketing digital ( Virtual )
         return "7908"
     elif idMateria == "15422": # Políticas de marketing ( Virtual )
@@ -318,8 +319,8 @@ def conversionLOFPaLOE(idMateria):
         return "5422"
     elif idMateria == "15452": # Inglés profesional ( Virtual )
         return "5419" # Inglés
-    elif idMateria == "15454": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5430" # FOL
+#    elif idMateria == "15454": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5430" # FOL
     elif idMateria == "15456": # Logística de almacenamiento ( Virtual )
         return "5424"
     elif idMateria == "15459": # Transporte internacional de mercancías ( Virtual )
@@ -354,8 +355,8 @@ def conversionLOFPaLOE(idMateria):
         return "5182"
     elif idMateria == "16809": # Inglés profesional
         return "5191" # Lengua Extranjera profesional: Inglés 1
-    elif idMateria == "16811": # Itinerario personal para la empleabilidad I
-        return "5188" # FOL
+#    elif idMateria == "16811": # Itinerario personal para la empleabilidad I
+#        return "5188" # FOL
     elif idMateria == "16813": # Lenguajes de marcas y sistemas de gestión de información
         return "5178"
     elif idMateria == "16815": # Programación
@@ -387,8 +388,8 @@ def conversionLOFPaLOE(idMateria):
 #    el
     if idMateria == "17351": # Inglés profesional ( Virtual )
         return "7941" # Lengua extranjera profesional: Inglés 1
-    elif idMateria == "17353": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "9333" # FOL
+#    elif idMateria == "17353": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "9333" # FOL
     elif idMateria == "17355": # Medios técnicos audiovisuales y escénicos ( Virtual )
         return "7929"
     elif idMateria == "17357": # Planificación de proyectos audiovisuales ( Virtual )
@@ -427,8 +428,8 @@ def conversionLOFPaLOE(idMateria):
         return "5260"
     elif idMateria == "17887": # Inglés profesional ( Virtual )
         return "5270" # Lengua Extranjera profesional: inglés 1
-    elif idMateria == "17889": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5266" # FOL
+#    elif idMateria == "17889": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5266" # FOL
     elif idMateria == "17891": # Muestreo y preparación de la muestra ( Virtual )
         return "5255"
     elif idMateria == "17894": # Análisis instrumental ( Virtual )
@@ -463,8 +464,8 @@ def conversionLOFPaLOE(idMateria):
 #        return ""
     elif idMateria == "15573": # Instalaciones eléctricas interiores ( Virtual )
         return "5338"
-    elif idMateria == "15575": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5344" # FOL
+#    elif idMateria == "15575": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5344" # FOL
 #    elif idMateria == "15577": # Tutoría I ( Virtual )
 #        return ""
     elif idMateria == "15579": # Infraestructuras comunes de telecomunicación en viviendas y edificios ( Virtual )
@@ -500,8 +501,8 @@ def conversionLOFPaLOE(idMateria):
         return "12338"
     elif idMateria == "18385": # Inglés profesional ( Virtual )
         return "12341" # Lengua extranjera profesional: inglés, 1
-    elif idMateria == "18387": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "12340" # FOL
+#    elif idMateria == "18387": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "12340" # FOL
     elif idMateria == "18389": # Medio natural ( Virtual )
         return "12342"
     elif idMateria == "18391": # Métodos y productos cartográficos ( Virtual )
@@ -540,8 +541,8 @@ def conversionLOFPaLOE(idMateria):
         return "5447"
     elif idMateria == "16468": # Inglés profesional ( Virtual )
         return "5225" # Inglés  Global
-    elif idMateria == "16470": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5458" # FOL
+#    elif idMateria == "16470": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5458" # FOL
     elif idMateria == "16472": # Protocolo y relaciones públicas ( Virtual )
         return "5223"
     elif idMateria == "16474": # Recursos turísticos ( Virtual )
@@ -577,8 +578,8 @@ def conversionLOFPaLOE(idMateria):
         return "5272"
     elif idMateria == "16737": # Inglés profesional ( Virtual )
         return "5286" # Lengua extranjera profesional: inglés 1
-    elif idMateria == "16739": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5283" # FOL
+#    elif idMateria == "16739": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5283" # FOL
     elif idMateria == "16741": # Lenguajes de marcas y sistemas de gestión de información ( Virtual )
         return "5276"
     elif idMateria == "16743": # Planificación y administración de redes ( Virtual )
@@ -613,8 +614,8 @@ def conversionLOFPaLOE(idMateria):
         return "5293"
     elif idMateria == "16771": # Inglés profesional ( Virtual )
         return "5176" # Lengua Extranjera profesional: Inglés 1
-    elif idMateria == "16773": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5173" # FOL
+#    elif idMateria == "16773": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5173" # FOL
     elif idMateria == "16775": # Lenguajes de marcas y sistemas de gestión de información ( Virtual )
         return "5288"
     elif idMateria == "16777": # Programación ( Virtual )
@@ -653,8 +654,8 @@ def conversionLOFPaLOE(idMateria):
         return "13926" # Gestión de proyectos de instalaciones de telecomunicaciones
     elif idMateria == "15764": # Inglés profesional ( Virtual )
         return "13927" # Lengua Extranjera  profesional: Inglés 1
-    elif idMateria == "15766": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "13931" # FOL
+#    elif idMateria == "15766": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "13931" # FOL
     elif idMateria == "15768": # Sistemas de producción audiovisual ( Virtual )
         return "13936"
     elif idMateria == "15770": # Sistemas de telefonía fija y móvil ( Virtual )
@@ -691,8 +692,8 @@ def conversionLOFPaLOE(idMateria):
         return "5325"
 #    elif idMateria == "17989": # Inglés profesional ( Virtual )
 #        return ""
-    elif idMateria == "17991": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5332" # FOL
+#    elif idMateria == "17991": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5332" # FOL
     elif idMateria == "17993": # Oficina de Farmacia ( Virtual )
         return "5326"
     elif idMateria == "17995": # Operaciones básicas de laboratorio ( Virtual )
@@ -735,8 +736,8 @@ def conversionLOFPaLOE(idMateria):
         return "5315"
 #    elif idMateria == "18032": # Inglés profesional ( Virtual )
 #        return ""
-    elif idMateria == "18034": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5320" # FOL
+#    elif idMateria == "18034": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5320" # FOL
     elif idMateria == "18036": # Mantenimiento mecánico preventivo del vehículo ( Virtual )
         return "5310"
 #    elif idMateria == "18038": # Tutoría I ( Virtual )
@@ -775,8 +776,8 @@ def conversionLOFPaLOE(idMateria):
 #        return ""
 #    elif idMateria == "18504": # Inglés profesional (GM) ( Virtual )
 #        return ""
-    elif idMateria == "18506": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5384" # FOL
+#    elif idMateria == "18506": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5384" # FOL
     elif idMateria == "18508": # Primeros auxilios ( Virtual )
         return "5375"
 #    elif idMateria == "18510": # Tutoría I ( Virtual )
@@ -817,8 +818,8 @@ def conversionLOFPaLOE(idMateria):
         return "5213"
     elif idMateria == "18597": # Inglés profesional ( Virtual )
         return "5445" # Lengua extranjera profesional: inglés 1
-    elif idMateria == "18599": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "5442" # FOL
+#    elif idMateria == "18599": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "5442" # FOL
     elif idMateria == "18601": # Primeros auxilios ( Virtual )
         return "5441"
     elif idMateria == "18603": # Desarrollo socioafectivo ( Virtual )
@@ -851,8 +852,8 @@ def conversionLOFPaLOE(idMateria):
         return "7884" # Lengua extranjera profesional: Inglés 1
     elif idMateria == "18629": # Inserción sociolaboral ( Virtual )
         return "7875"
-    elif idMateria == "18631": # Itinerario personal para la empleabilidad I ( Virtual )
-        return "8339" # FOL
+#    elif idMateria == "18631": # Itinerario personal para la empleabilidad I ( Virtual )
+#        return "8339" # FOL
     elif idMateria == "18633": # Metodología de la intervención social ( Virtual )
         return "7897"
     elif idMateria == "18635": # Primeros auxilios ( Virtual )
