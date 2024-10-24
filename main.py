@@ -35,7 +35,7 @@ def main():
     mensajes_email.append(SUBDOMAIN)
     mensajes_email.append("<b>RESUMEN DETALLADO</b>")
     # ids de users creados en deploy que no hay que borrar
-    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33] 
+    usuarios_moodle_no_borrables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 3725, 3729, 3730] 
     # 
     moodle = get_moodle(SUBDOMAIN)[0]
     alumnos_sigad = []
@@ -76,7 +76,7 @@ def main():
     # Hago la 1era llamada
     print( 'Making the call to the 1st web service:')
     resp_data = conexion_1er_ws.getJson()
-    y = json.loads(resp_data);
+    y = json.loads(resp_data)
     if y is not None:
         codigo=y["codigo"]
         mensaje=y["mensaje"]
@@ -151,7 +151,7 @@ def main():
                 existe = True
                 # Si el usuario está en Moodle y en SIGAD miro si en SIGAD sigue teniendo el mismo email
                 # si no coinciden el email en SIGAD y en Moodle entonces actualizo en Moodle al email que haya en SIGAD
-                print("alumnoSIGAD.getEmail(): ", alumnoSIGAD.getEmailSigad())
+                print("alumnoSIGAD.getEmailSigad(): ", alumnoSIGAD.getEmailSigad())
                 print("alumnoMoodle['email']: ", alumnoMoodle['email_sigad'])
                 if alumnoSIGAD.getEmailSigad() is not None and alumnoMoodle['email_sigad'] is not None and alumnoSIGAD.getEmailSigad().lower() != alumnoMoodle['email_sigad'].lower():
                     userid = alumnoMoodle['userid']
@@ -159,7 +159,7 @@ def main():
                     update_moodle_email_sigad(userid, email_nuevo)
                     num_alumnos_modificado_email = num_alumnos_modificado_email + 1
                     mensajes_email.append("- Al alumno " + alumnoMoodle['username'] + " que tenia el email " + alumnoMoodle['email'] + \
-                        " se le ha cambiado a " + alumnoSIGAD.getEmail() + ").")
+                        " se le ha cambiado a " + alumnoSIGAD.getEmailSigad() + ").")
                 #
                 break
         
@@ -188,7 +188,7 @@ def main():
         existe = False
         # comprobamos si existe por email
         for alumnoSIGAD in alumnos_sigad:
-            if alumnoSIGAD.getEmail() is not None \
+            if alumnoSIGAD.getEmailSigad() is not None \
                     and alumnoMoodle['email_sigad'].lower() == alumnoSIGAD.getEmailSigad().lower(): 
                 existe = True
                 print("- Alumno a actualizar su login por coincidencia de email: '", repr(alumnoMoodle),"'", sep="" )
@@ -199,7 +199,7 @@ def main():
                 num_alumnos_modificado_login = num_alumnos_modificado_login + 1
                 mensajes_email.append("- Al alumno que tenia usuario de acceso " + alumnoMoodle['username'] + \
                         " se le ha cambiado a " + alumnoSIGAD.getDocumento() + \
-                        "(" + alumnoSIGAD.getEmail().lower() + ").")
+                        "(" + alumnoSIGAD.getEmailSigad().lower() + ").")
                 # Le envío email avisándolede su cambio de usuario 
                 usuario = alumnoSIGAD.getDocumento()
                 oldUsuario = alumnoMoodle['username']
@@ -347,8 +347,9 @@ def main():
     diccionario_cursos = {curso['shortname'] : curso['courseid'] for curso in cursos_moodle}
     diccionario_alumnos = {alumno['username'] : alumno['userid'] for alumno in alumnos_moodle}
     #
+    csv.append("First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email,Work Secondary Email")
     for alumno in alumnos_sigad:
-        if num_emails_enviados >= 1900: # limitacion de 2.000 emails diarios en actual cuenta de gmail
+        if num_emails_enviados >= 600: # limitacion de 2.000 emails diarios en actual cuenta de gmail
             # TODO: seguimos teniendo esta limitación en cuenta de pago?
             mensajes_email.append("<br/>")
             mensajes_email.append(" ALCANZADO LÍMITE DE ENVÍO DE EMAILS DIARIOS ")
@@ -370,11 +371,12 @@ def main():
                 mensajes_email.append("- Alumno " + alumno.getDocumento() + " creado.")
                 matricula_alumno_en_cohorte_alumnado(moodle, id_alumno)
                 alumno_es_nuevo = True
+                
                 # añadirlo al CSV de creación de cuentas 
                 # TODO: tratar de crearlo vía API de google
                 # https://support.google.com/a/answer/40057?hl=es&p=bulk_add_users&rd=1
-                # First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email
-                csv.append( alumno.getNombre() + "," + alumno.getApellidos() + "," + alumno.getEmailDominio() + "," + password + ",,/Alumnado,," + alumno.getEmail())
+                # First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email,Work Secondary Email
+                csv.append( alumno.getNombre() + "," + alumno.getApellidos() + "," + alumno.getEmailDominio() + "," + password + ",,/Alumnado,," + alumno.getEmailSigad()+ "," + alumno.getEmailSigad())
 
 
             except ValueError as e:
@@ -396,7 +398,7 @@ def main():
                 if ciclo.getModulos() is not None:
                     for modulo in ciclo.getModulos():
                         id_materia = modulo.get_id_materia()
-
+                        print("Matriculando en ", id_materia )
                         shortname_curso = str(codigo_centro) + "-" + str(siglas_ciclo) + "-" + str(id_materia)
                         #id_curso = get_id_de_curso_by_shortname(moodle, shortname_curso)
                         id_curso = ""
@@ -405,6 +407,7 @@ def main():
                         except KeyError:
                             id_curso = ""
 
+                        print("id_curso ", id_curso )
                         if id_curso == "": # el curso no existe
                             print("El curso ", str(shortname_curso) , " no existe.", sep="")
                             mensajes_email.append("- Alumno "+ alumno.getDocumento()+ " NO puede matricularse en "+ shortname_curso + " por que el curso NO existe.")
@@ -425,18 +428,19 @@ def main():
                             print("El alumno (",id_alumno,") ya estaba matriculado en ", shortname_curso, sep="")
         # envío email
         if alumno_es_nuevo:
+            time.sleep(5) # para no saturar el envío de emails
             matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
             nombre = return_text_for_html( alumno.getNombre() )
             apellidos = return_text_for_html( alumno.getApellidos() )
-            # TODO: Añadir enlace a videotutorial explicando funcionamiento de la plataforma y al curso de ayuda.
-            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.fpvirtualaragon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a: <b>{contrasena}</b> (es recomendable que la cambie)<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.fpvirtualaragon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.fpvirtualaragon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP virtual Arag&oacute;n{pie_email_rrss}'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto, pie_email_rrss = pie_email_rrss )
-            # TODO: Añadir explicación de como se crea la cuenta de email y modos de acceder
+            
+            mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.fpvirtualaragon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a (es recomendable que la cambie): <b>{contrasena}</b><br><br/>Tambi&eacute;n se le crear&aacute; la cuenta <b>{email}</b> con contrase&ntilde;a (deber&aacute; cambiarla al acceder) <b>{contrasena}</b><br> Esta cuenta de correo es la que le dar&aacute; acceso a las videoconferencias de la plataforma y tambi&eacute;n a la propia plataforma. <strong>La cuenta puede tardar hasta 72 horas lectivas en estar disponible</strong>.<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.fpvirtualaragon.es/login/forgot_password.php<br/>Dispone de un curso de ayuda dónde encontrar información sobre el uso de la plataforma en <a href="https://{subdomain}.fpvirtualaragon.es/course/view.php?id=2">https://{subdomain}.fpvirtualaragon.es/course/view.php?id=2</a><br/><br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.fpvirtualaragon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP virtual Arag&oacute;n{pie_email_rrss}'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto, pie_email_rrss = pie_email_rrss, email = alumno.getEmailDominio() )
+            
             
             destinatario = "pruizs@campusdigitalfp.com"
             if SUBDOMAIN == "www":
-                destinatario = alumno.getEmail()
+                destinatario = alumno.getEmailSigad()
             else:
-                print("Debería haberse enviado a '", alumno.getEmail(), "'." )
+                print("Debería haberse enviado a '", alumno.getEmailSigad(), "'." )
 
             enviado = send_email( destinatario , "FP virtual - Aragón", mensaje)
 
@@ -455,11 +459,11 @@ def main():
                 apellidos = return_text_for_html( alumno.getApellidos() )
                 mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.fpvirtualaragon.es/ se le han a&ntilde;adido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.fpvirtualaragon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.fpvirtualaragon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP virtual Arag&oacute;n{pie_email_rrss}'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto, pie_email_rrss = pie_email_rrss )
 
-                destinatario = "fp@catedu.es"
+                destinatario = "pruizs@campusdigitalfp.com"
                 if SUBDOMAIN == "www":
-                    destinatario = alumno.getEmail()
+                    destinatario = alumno.getEmailSigad()
                 else:
-                    print("Debería haberse enviado a '", alumno.getEmail(), "'." )
+                    print("Debería haberse enviado a '", alumno.getEmailSigad(), "'." )
                 
                 enviado = send_email( destinatario , "FP virtual - Aragón", mensaje)
 
@@ -527,7 +531,9 @@ def main():
     ########################
     texto = "<br/>\n".join( map(return_text_for_html, mensajes_email) )
 
-    texto = texto + "<br/>\n".join( map(return_text_for_html, csv) )
+    texto = texto + "\n"
+    texto = texto + "\n"
+    texto = texto + "\n".join( csv )
     
     #
     print("Comenzamos con el fichero")
@@ -723,7 +729,7 @@ def return_text_for_html(cadena):
     """
     Cada una cadena de texto reemplaza los caracteres con tildes por su equivalente en html
     """
-    print("return_text_for_html(",cadena,"). Tipo(", type(cadena) , ")" , sep="")
+    # print("return_text_for_html(",cadena,"). Tipo(", type(cadena) , ")" , sep="")
     cadena = cadena.replace("á", "&aacute;")
     cadena = cadena.replace("é", "&eacute;")
     cadena = cadena.replace("í", "&iacute;")
@@ -921,16 +927,17 @@ def update_moodle_email_sigad(userid, email_nuevo):
     En el moodle dado actualiza el email de sigad a userid
     """
     print("update_moodle_email_sigad(...)")
-
+    
     command = '''\
             mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
                 update mdl_user_info_data  
                 set data = '{email_nuevo}'
-                WHERE fieldid = 4 and userid = = {userid}
+                WHERE fieldid = 4 and userid = {userid}
             \"
             '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, email_nuevo = email_nuevo, userid = userid )
 
-    run_command( command, False )
+    devuelto = run_command( command, True )
+    # print(" devuelto " + devuelto)
 
 def get_date_time():
     """
@@ -1509,8 +1516,8 @@ def existeAlumnoEnMoodle(moodle, alumno):
 def isAlumnoCreable(alumno):
     print("isAlumnoCreable(...)")
     alumno_creable = True
-    if alumno.getEmail() is None:
-        print("El alumno a crear no tiene email")
+    if alumno.getEmailSigad() is None:
+        print("El alumno a crear no tiene email sigad")
         alumno_creable = False
     if alumno.getNombre() is None:
         print("El alumno a crear no tiene nombre")
@@ -1547,7 +1554,7 @@ def crearAlumnoEnMoodle(moodle, alumno, password):
             mysql --user=\"{DB_USER}\" --password=\"{DB_PASS}\" --host=\"{DB_HOST}\" -D \"{DB_NAME}\"  --execute=\"
                 insert into mdl_user_info_data (userid, fieldid, data) 
                 values 
-                ({idUser}, 4, {email_sigad})
+                ({idUser}, 4, '{email_sigad}')
             \"
             '''.format(DB_USER = DB_USER, DB_PASS = DB_PASS, DB_HOST = DB_HOST, DB_NAME = DB_NAME, idUser = idUser, email_sigad = alumno.getEmailSigad() )
 
