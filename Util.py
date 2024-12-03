@@ -49,6 +49,12 @@ def eliminar_tildes_y_enes(texto):
     texto = texto.replace("í", "i").replace("Í", "I")
     texto = texto.replace("ó", "o").replace("Ó", "O")
     texto = texto.replace("ú", "u").replace("Ú", "U")
+
+    texto = texto.replace("à", "a").replace("À", "A")
+    texto = texto.replace("é", "e").replace("È", "E")
+    texto = texto.replace("ì", "i").replace("Ì", "I")
+    texto = texto.replace("ò", "o").replace("Ò", "O")
+    texto = texto.replace("ù", "u").replace("Ù", "U")
     
     texto = texto.replace("ä", "a").replace("Ä", "A")
     texto = texto.replace("ë", "e").replace("Ë", "E")
