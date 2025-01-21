@@ -62,6 +62,12 @@ def eliminar_tildes_y_enes(texto):
     texto = texto.replace("ö", "o").replace("Ö", "O")
     texto = texto.replace("ü", "u").replace("Ü", "U")
 
+    texto = texto.replace("â", "a").replace("Â", "A")
+    texto = texto.replace("ê", "e").replace("Ê", "E")
+    texto = texto.replace("î", "i").replace("Î", "I")
+    texto = texto.replace("ô", "o").replace("Ô", "O")
+    texto = texto.replace("û", "u").replace("Û", "U")
+
     texto = texto.replace("(", "").replace(")", "")
 
     texto = texto.replace("`", "").replace("'", "")
@@ -692,8 +698,10 @@ def conversionLFPaLOE(idMateria):
 #        return 13927 # Lengua Extranjera  profesional: Inglés 1
 #    elif idMateria == 15766: # Itinerario personal para la empleabilidad I ( Virtual )
 #        return 13931 # FOL
-#    elif idMateria == 15768: # Sistemas de producción audiovisual ( Virtual )
+#    elif idMateria == 15768: # Sistemas de producción audiovisual ( Virtual ) KKK: Sería esto al revés
 #        return 13936
+    elif idMateria == 13936: # TODO: Añado hecho para solucionar ausencia de docente. Hay que deshacer en julio 2025
+        return 15768
     elif idMateria == 15770: # Sistemas de telefonía fija y móvil ( Virtual )
         return 13930
     elif idMateria == 15772: # Sistemas informáticos y redes locales ( Virtual )
