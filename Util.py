@@ -10,7 +10,7 @@ def creaEmailsDominio(nombre, pape, sape, documento):
     if sape is None:
         sape = ""
 
-    #print("creaEmailsDominio("+nombre+", "+pape+", "+sape+", "+documento+")")
+    print("creaEmailsDominio("+nombre+", "+pape+", "+sape+", "+documento+")")
     
     nombre = nombre.lower()
     nombre = eliminar_tildes_y_enes(nombre)
@@ -22,9 +22,12 @@ def creaEmailsDominio(nombre, pape, sape, documento):
     if sape is not None:
         sape = sape.lower()
         sape = eliminar_tildes_y_enes(sape)
-    
-    documento = documento.lower()
-    documento = documento.replace(' ', '')
+
+    if documento is not None: #la función isAlumnoCreable no dejará crearlo luego
+        documento = documento.lower()
+        documento = documento.replace(' ', '')
+    else:
+        documento = "-"
 
     palabras = nombre.split()
     inicialesNombre = ''.join([palabra[0] for palabra in palabras])
@@ -700,8 +703,8 @@ def conversionLFPaLOE(idMateria):
 #        return 13931 # FOL
 #    elif idMateria == 15768: # Sistemas de producción audiovisual ( Virtual ) KKK: Sería esto al revés
 #        return 13936
-    elif idMateria == 13936: # TODO: Añado hecho para solucionar ausencia de docente. Hay que deshacer en julio 2025
-        return 15768
+#    elif idMateria == 13936: # TODO: Añado hecho para solucionar ausencia de docente. Hay que deshacer en julio 2025
+#        return 15768
     elif idMateria == 15770: # Sistemas de telefonía fija y móvil ( Virtual )
         return 13930
     elif idMateria == 15772: # Sistemas informáticos y redes locales ( Virtual )
