@@ -177,6 +177,7 @@ def main():
     ########################
     # De cada alumno que esté en moodle y no en sigad miro si en moodle hay alguien con ese email
     # - si hay alguien con ese email considero que es la misma persona a la que han actualizado DNI/NIE/... en SIGAD y la actualizo
+    # TODO: Utilizar este bucle como ejemplo para las que su nombre ha cambiado
     # - si no hay nadie con ese email considero que es una baja y lo suspendo
     ########################
     print("*** Alumnos que habría que actualizar su id:")
@@ -366,6 +367,9 @@ def main():
             print("Es nuevo")
             password = random_pass(10)
             try:
+                # TODO: Comprobar al ir a crearlo si ya existe en moodle alguien con 
+                # TODO: ese email corporativo. De ser así, modificarle el email corporativo
+                # TODO: y volver a intentar crearlo. Repetir hasta éxito.
                 id_alumno = crearAlumnoEnMoodle(moodle, alumno, password)
                 num_alumnos_creados = num_alumnos_creados + 1
                 mensajes_email.append("- Alumno " + alumno.getDocumento() + " creado.")
