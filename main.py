@@ -693,7 +693,7 @@ def get_estudiantes_con_mas_de_1_tutorias(moodle):
 
 def get_cursos_de_tutoria_en_que_esta_matriculado_un_alumno(moodle, id_alumno):
     """
-    Devuelve una lista los cursos de tutoríaen que un alumno está matriculado sin tener la matrícula suspendida
+    Devuelve una lista los cursos de tutoría en que un alumno está matriculado sin tener la matrícula suspendida
     """
     print("get_cursos_de_tutoria_en_que_esta_matriculado_un_alumno(...)")
 

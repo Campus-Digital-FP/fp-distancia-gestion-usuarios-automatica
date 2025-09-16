@@ -817,8 +817,8 @@ def conversionLFPaLOE(idMateria):
         return 5379
     elif idMateria == 18498: # Características y necesidades de las personas en situación de dependencia ( Virtual )
         return 5378
-#    elif idMateria == 18500: # Destrezas sociales ( Virtual )
-#        return 5125
+    elif idMateria == 18500: # Destrezas sociales ( Virtual )
+        return 5125
 #    elif idMateria == 18502: # Digitalización aplicada a los sectores productivos (GM) ( Virtual )
 #        return 
 #    elif idMateria == 18504: # Inglés profesional (GM) ( Virtual )
@@ -861,8 +861,8 @@ def conversionLFPaLOE(idMateria):
         return 5432
 #    elif idMateria == 18593: # Digitalización aplicada a los sectores productivos (GS) ( Virtual )
 #        return 
-#    elif idMateria == 18595: # Habilidades sociales ( Virtual )
-#        return 5213
+    elif idMateria == 18595: # Habilidades sociales ( Virtual )
+        return 5213
 #    elif idMateria == 18597: # Inglés profesional ( Virtual )
 #        return 5445 # Lengua extranjera profesional: inglés 1
 #    elif idMateria == 18599: # Itinerario personal para la empleabilidad I ( Virtual )
@@ -893,8 +893,8 @@ def conversionLFPaLOE(idMateria):
         return 7874
 #    elif idMateria == 18623: # Digitalización aplicada a los sectores productivos (GS) ( Virtual )
 #        return 
-#    elif idMateria == 18625: # Habilidades sociales ( Virtual )
-#        return 7899
+    elif idMateria == 18625: # Habilidades sociales ( Virtual )
+        return 7899
 #    elif idMateria == 18627: # Inglés profesional ( Virtual )
 #        return 7884 # Lengua extranjera profesional: Inglés 1
     elif idMateria == 18629: # Inserción sociolaboral ( Virtual )
@@ -973,3 +973,14 @@ def conversionLFPaLOE(idMateria):
     ########################################################################################################################
     # End of conversionLFPaLOE
     ########################################################################################################################
+
+########################################################################################################################
+# TODO Unir ingleses LOE de Maite
+########################################################################################################################
+def unirInglesCampusDigital(alumnos_sigad):
+    for alumno in alumnos_sigad:
+        for centro in alumno.centros:
+            if centro['idCentro'] == 11: # Campus Digital
+                for ciclo in centro.ciclos:
+                    if ciclo['idCiclo'] in [15452, 17351, 17881, 15571, 16468, 16737, 16771, 18597, 18627]: # Inglés profesional
+                        ciclo['idCiclo'] = 5191 # Lengua Extranjera profesional: Inglés 1
