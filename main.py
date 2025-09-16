@@ -403,7 +403,7 @@ def main():
                     for modulo in ciclo.getModulos():
                         id_materia = modulo.get_id_materia()
                         print("Matriculando en ", id_materia )
-                        shortname_curso = str(codigo_centro) + "-" + str(siglas_ciclo) + "-" + str(id_materia)
+                        shortname_curso = crearShortnameCurso(codigo_centro, siglas_ciclo, id_materia)
                         #id_curso = get_id_de_curso_by_shortname(moodle, shortname_curso)
                         id_curso = ""
                         try:
@@ -1569,6 +1569,23 @@ def crearAlumnoEnMoodle(moodle, alumno, password):
         raise ValueError
     #
     # End of crearAlumnoEnMoodle
+    #
+
+def crearShortnameCurso(codigo_centro, siglas_ciclo, id_materia):
+    """
+    Crea el shortname del curso a partir de los datos dados teniendo en cuenta que hay que fusionar los cursos de Maite.
+    """
+
+    shortname = str(codigo_centro) + "-" + str(siglas_ciclo) + "-" + str(id_materia)
+
+    # Casos especiales de fusión de cursos de Maite
+    # TODO Borrar para antes de empezar el curso 2026-2027
+    if shortname == "50020125-IFC301-5061" or shortname == "50020125-IFC302-5077" or shortname == "50020125-IFC303-5092" or shortname == "50020125-IFC201-5001":
+        shortname = "50020125-IFC301-5061"
+
+    return shortname
+    #
+    # End of crearShortnameCurso
     #
 
 ###################################################
