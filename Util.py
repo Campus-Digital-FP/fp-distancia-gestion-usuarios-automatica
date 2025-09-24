@@ -959,8 +959,9 @@ def conversionLFPaLOE(idMateria):
 
 def unirInglesCampusDigital(alumnos_sigad):
     for alumno in alumnos_sigad:
-        for centro in alumno.centros:
-            if centro['idCentro'] == 50020125: # Campus Digital
-                for ciclo in centro.ciclos:
-                    if ciclo['idCiclo'] in [15452, 17351, 17881, 15571, 16468, 16737, 16771, 18597, 18627]: # Inglés profesional
-                        ciclo['idCiclo'] = 5191 # Lengua Extranjera profesional: Inglés 1
+        for centro in alumno.getCentros():
+            if centro.get_codigo_centro() == 50020125: # Campus Digital
+                for ciclo in centro.getCiclos():
+                    for modulo in ciclo.getModulos():
+                        if modulo.get_id_materia() in [15452, 17351, 17881, 15571, 16468, 16737, 16771, 18597, 18627]: # Inglés profesional
+                            modulo['idMateria'] = 5191 # Lengua Extranjera profesional: Inglés 1
