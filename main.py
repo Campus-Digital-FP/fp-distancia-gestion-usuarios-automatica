@@ -206,7 +206,7 @@ def main():
                 oldUsuario = alumnoMoodle['username']
                 mensaje = '''Hola,<br/><br/>su cuenta en https://{subdomain}.fpvirtualaragon.es/ se ha actualizado.<br/><br/>Su nuevo usuario es: <b>{usuario}</b> en lugar de {oldUsuario}.<br/>Su contrase&ntilde;a NO ha sido modificada.<br/><br/>Recuerde que puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.fpvirtualaragon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.fpvirtualaragon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP virtual Arag&oacute;n{pie_email_rrss}'''.format(subdomain = SUBDOMAIN, usuario = usuario, oldUsuario = oldUsuario, pie_email_rrss = pie_email_rrss )
                 
-                destinatario = "pruizs@campusdigitalfp.com"
+                destinatario = "gestion@fpvirtualaragon.es"
                 if SUBDOMAIN == "www":
                     destinatario = alumnoSIGAD.getEmailDominio().lower() 
                 else:
@@ -440,7 +440,7 @@ def main():
             mensaje = '''Bienvenido/a {nombre} {apellidos},<br/><br/>su cuenta se ha creado en https://{subdomain}.fpvirtualaragon.es/ y sus datos de acceso son los siguientes:<br/><br/>usuario: <b>{usuario}</b><br/>contrase&ntilde;a (es recomendable que la cambie): <b>{contrasena}</b><br><br/>Tambi&eacute;n se le crear&aacute; la cuenta <b>{email}</b> con contrase&ntilde;a (deber&aacute; cambiarla al acceder) <b>{contrasena}</b><br> Esta cuenta de correo es la que le dar&aacute; acceso a las videoconferencias de la plataforma y tambi&eacute;n a la propia plataforma. <strong>La cuenta puede tardar hasta 72 horas lectivas en estar disponible</strong>.<br/><br/>Ha sido matriculado/a en:<br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.fpvirtualaragon.es/login/forgot_password.php<br/>Dispone de un curso de ayuda dónde encontrar información sobre el uso de la plataforma en <a href="https://{subdomain}.fpvirtualaragon.es/course/view.php?id=2">https://{subdomain}.fpvirtualaragon.es/course/view.php?id=2</a><br/><br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.fpvirtualaragon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP virtual Arag&oacute;n{pie_email_rrss}'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, usuario = alumno.getDocumento().lower(), contrasena = password, matriculado_en_texto = matriculado_en_texto, pie_email_rrss = pie_email_rrss, email = alumno.getEmailDominio() )
             
             
-            destinatario = "pruizs@campusdigitalfp.com"
+            destinatario = "gestion@fpvirtualaragon.es"
             if SUBDOMAIN == "www":
                 destinatario = alumno.getEmailSigad()
             else:
@@ -463,7 +463,7 @@ def main():
                 apellidos = return_text_for_html( alumno.getApellidos() )
                 mensaje = '''Hola {nombre} {apellidos},<br/><br/>a su cuenta en https://{subdomain}.fpvirtualaragon.es/ se le han a&ntilde;adido las siguientes matr&iacute;culas:<br/><br/>{matriculado_en_texto}<br/><br/>Puede recuperar su contrase&ntilde;a en cualquier momento a trav&eacute;s de https://{subdomain}.fpvirtualaragon.es/login/forgot_password.php<br/>No responda a esta cuenta de correo electr&oacute;nico pues se trata de una cuenta automatizada no atendida. En caso de cualquier problema consulte con su coordinador/a de ciclo o acuda a la secci&oacute;n de <a href="https://{subdomain}.fpvirtualaragon.es/soporte/">ayuda/incidencias</a>.<br/><br/><br/>Saludos<br/><br/>------<br/>FP virtual Arag&oacute;n{pie_email_rrss}'''.format(nombre = nombre, apellidos = apellidos, subdomain = SUBDOMAIN, matriculado_en_texto = matriculado_en_texto, pie_email_rrss = pie_email_rrss )
 
-                destinatario = "pruizs@campusdigitalfp.com"
+                destinatario = "gestion@fpvirtualaragon.es"
                 if SUBDOMAIN == "www":
                     destinatario = alumno.getEmailSigad()
                 else:
@@ -1604,4 +1604,4 @@ except Exception as exc:
     traceback.print_exception(*sys.exc_info())
     print("--------------------")
     print(exc)
-    send_email("pruizs@campusdigitalfp.com", "ERROR - Informe automatizado gestión automática usuarios moodle", "Ha fallado el informe, revisar logs. <br/>Error: " + str(exc) + "<br/><br/><br/>" + str(traceback.print_exc()) + "<br/><br/><br/>" + str(traceback.print_exception(*sys.exc_info())))
+    send_email("gestion@fpvirtualaragon.es", "ERROR - Informe automatizado gestión automática usuarios moodle", "Ha fallado el informe, revisar logs. <br/>Error: " + str(exc) + "<br/><br/><br/>" + str(traceback.print_exc()) + "<br/><br/><br/>" + str(traceback.print_exception(*sys.exc_info())))

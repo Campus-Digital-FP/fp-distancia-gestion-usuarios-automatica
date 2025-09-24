@@ -2,7 +2,7 @@ def creaEmailsDominio(nombre, pape, sape, documento):
     """
     Creamos un email para los estudiantes a partir de su nombre, apellidos y documento
 
-    Pablo Ruiz Soria DNI 12345678T -> pruizst@fpvirtualaragon.es
+    Marcos Ruiz García DNI 12345678T -> mruizg@fpvirtualaragon.es
     Juan Antonio Aragón de Lucía DNI 23456789G -> jaaragondlg@fpvirtualaragon.es
     Luis Miguel Saez de Burundanga DNI 56783456F -> lmsaezdbf@fpvirtualaragon.es
     """
