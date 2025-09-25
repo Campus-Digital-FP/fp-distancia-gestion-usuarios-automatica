@@ -947,21 +947,3 @@ def conversionLFPaLOE(idMateria):
     ########################################################################################################################
     # End of conversionLFPaLOE
     ########################################################################################################################
-
-########################################################################################################################
-# TODO Unir ingleses LOE de Maite
-########################################################################################################################
-
-# 50020125-IFC301-5061
-# 50020125-IFC201-5001
-# 50020125-IFC302-5077
-# 50020125-IFC303-5092
-
-def unirInglesCampusDigital(alumnos_sigad):
-    for alumno in alumnos_sigad:
-        for centro in alumno.getCentros():
-            if centro.get_codigo_centro() == 50020125: # Campus Digital
-                for ciclo in centro.getCiclos():
-                    for modulo in ciclo.getModulos():
-                        if modulo.get_id_materia() in [15452, 17351, 17881, 15571, 16468, 16737, 16771, 18597, 18627]: # Inglés profesional
-                            modulo['idMateria'] = 5191 # Lengua Extranjera profesional: Inglés 1
