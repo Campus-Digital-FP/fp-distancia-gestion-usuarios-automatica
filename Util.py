@@ -10,6 +10,9 @@ def creaEmailsDominio(nombre, pape, sape, documento):
     if sape is None:
         sape = ""
 
+    if documento is None: #la función isAlumnoCreable no dejará crearlo luego
+        documento = "-"
+
     print("creaEmailsDominio("+nombre+", "+pape+", "+sape+", "+documento+")")
     
     nombre = nombre.lower()
@@ -23,11 +26,9 @@ def creaEmailsDominio(nombre, pape, sape, documento):
         sape = sape.lower()
         sape = eliminar_tildes_y_enes(sape)
 
-    if documento is not None: #la función isAlumnoCreable no dejará crearlo luego
-        documento = documento.lower()
-        documento = documento.replace(' ', '')
-    else:
-        documento = "-"
+    
+    documento = documento.lower()
+    documento = documento.replace(' ', '')
 
     palabras = nombre.split()
     inicialesNombre = ''.join([palabra[0] for palabra in palabras])

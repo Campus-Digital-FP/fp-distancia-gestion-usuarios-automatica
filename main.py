@@ -190,6 +190,7 @@ def main():
         # comprobamos si existe por email
         for alumnoSIGAD in alumnos_sigad:
             if alumnoSIGAD.getEmailSigad() is not None \
+                    and alumnoSIGAD.getDocumento() is not None \
                     and alumnoMoodle['email_sigad'].lower() == alumnoSIGAD.getEmailSigad().lower(): 
                 existe = True
                 print("- Alumno a actualizar su login por coincidencia de email: '", repr(alumnoMoodle),"'", sep="" )
