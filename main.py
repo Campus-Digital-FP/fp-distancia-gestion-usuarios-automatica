@@ -351,7 +351,7 @@ def main():
     #
     csv.append("First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email,Work Secondary Email")
     for alumno in alumnos_sigad:
-        if num_emails_enviados >= 600: # limitacion de 2.000 emails diarios en actual cuenta de gmail
+        if num_emails_enviados >= 5: # limitacion de 2.000 emails diarios en actual cuenta de gmail
             # TODO: seguimos teniendo esta limitación en cuenta de pago?
             mensajes_email.append("<br/>")
             mensajes_email.append(" ALCANZADO LÍMITE DE ENVÍO DE EMAILS DIARIOS ")
