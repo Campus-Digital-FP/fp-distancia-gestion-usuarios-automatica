@@ -482,8 +482,8 @@ def conversionLFPaLOE(idMateria):
 #        return 5041 # Empresa e iniciativa emprendedora
 #    elif idMateria == 17905: # Módulo profesional optativo ( Virtual )
 #        return 
-    elif idMateria == 17907: # Proyecto intermodular de laboratorio de análisis y de control de calidad ( Virtual )
-        return 5039 # Proyecto de laboratorio de análisis y de control de calidad
+#    elif idMateria == 17907: # Proyecto intermodular de laboratorio de análisis y de control de calidad ( Virtual )
+#        return 5039 # Proyecto de laboratorio de análisis y de control de calidad
 #    elif idMateria == 17909: # Sostenibilidad aplicada al sistema productivo ( Virtual )
 #        return 
     
@@ -589,8 +589,8 @@ def conversionLFPaLOE(idMateria):
         return 5224
 #    elif idMateria == 16482: # Módulo profesional optativo ( Virtual )
 #        return 
-    elif idMateria == 16484: # Proyecto intermodular de agencias de viajes y gestión de eventos ( Virtual )
-        return 5239 # Proyecto de agencias de viajes y gestión de eventos
+#    elif idMateria == 16484: # Proyecto intermodular de agencias de viajes y gestión de eventos ( Virtual )
+#        return 5239 # Proyecto de agencias de viajes y gestión de eventos
     elif idMateria == 16486: # Segunda lengua extranjera ( Virtual )
         return 5228 # Segunda lengua extranjera: Francés Global
 #    elif idMateria == 16488: # Sostenibilidad aplicada al sistema productivo ( Virtual )

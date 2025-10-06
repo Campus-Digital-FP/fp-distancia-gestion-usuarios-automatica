@@ -7,3 +7,6 @@ Config-www.py
 __pycache__/*
 logs/*
 classes/__pycache__/*
+jsons/
+csvs/
+scripts/

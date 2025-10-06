@@ -72,40 +72,53 @@ def main():
     # Transformo JSON de SIGAD a lista
     #########################################
 
-    # Creo la conexión para la 1era llamada
-    conexion_1er_ws = Conexion(url1, path1 + curso_academico, usuario1, password1, method1)
-    # Hago la 1era llamada
-    print( 'Making the call to the 1st web service:')
-    resp_data = conexion_1er_ws.getJson()
-    y = json.loads(resp_data)
-    if y is not None:
-        codigo=y["codigo"]
-        mensaje=y["mensaje"]
-        idSolicitud=y["idSolicitud"]
-        print("Código: " , codigo, ", Mensaje: ", mensaje, "idSolicitud: ", idSolicitud)
-        guarda_fichero(get_date_time() + "." + SUBDOMAIN + ".ws1.log", str(resp_data) )
-        if codigo == 0: # éxito en la 1era llamada
-            # 
-            print( 'Waiting 10 seconds before the first call to the 2nd web service...')
-            for x in range(1, 11):
-                time.sleep( 10 )
-                print( 'Iteration number ' + str(x))
-                conexion_2ndo_ws = Conexion(url2, path2 + str(idSolicitud), usuario2, password2, method2)
-                resp_data = conexion_2ndo_ws.getJson()
-                y = json.loads(resp_data)
-                if y is not None:
-                    codigo=y["codigo"]
-                    mensaje=y["mensaje"]
-                    print("codigo: " + str(codigo) + ", mensaje: " + str(mensaje))
-                    guarda_fichero(get_date_time() + "." + SUBDOMAIN + ".ws2.log", str(resp_data) )
-                    if codigo == 0: # éxito de la 2nda llamada
-                        procesaJsonEstudiantes(y, alumnos_sigad)
-                        break
-                    else: # Error  en la 2ª llamada
-                        print("Fichero aún no listo. Código: " + str(codigo) 
-                            + ", mensaje: " + str(mensaje))
-        else: # Error en la 1era llamada
-            print("Error en la llamada al 1er web service")
+    procesa_desde_fichero = False # Procesa desde fichero en lugar del ws
+    if procesa_desde_fichero:
+        with open(PATH + "/jsons/20250925_01.json", "r", encoding="utf-8") as f:
+            y = json.load(f)
+        if y is not None:
+            codigo=y["codigo"]
+            mensaje=y["mensaje"]
+            print("codigo: " + str(codigo) + ", mensaje: " + str(mensaje))
+            procesaJsonEstudiantes(y, alumnos_sigad)
+    else: 
+        # Creo la conexión para la 1era llamada
+        conexion_1er_ws = Conexion(url1, path1 + curso_academico, usuario1, password1, method1)
+        # Hago la 1era llamada
+        print( 'Making the call to the 1st web service:')
+        resp_data = conexion_1er_ws.getJson()
+        y = json.loads(resp_data)
+        if y is not None:
+            codigo=y["codigo"]
+            mensaje=y["mensaje"]
+            idSolicitud=y["idSolicitud"]
+            print("Código: " , codigo, ", Mensaje: ", mensaje, "idSolicitud: ", idSolicitud)
+            guarda_fichero(get_date_time() + "." + SUBDOMAIN + ".ws1.log", str(resp_data) )
+            if codigo == 0: # éxito en la 1era llamada
+                # 
+                print( 'Waiting 10 seconds before the first call to the 2nd web service...')
+                for x in range(1, 11):
+                    time.sleep( 10 )
+                    print( 'Iteration number ' + str(x))
+                    conexion_2ndo_ws = Conexion(url2, path2 + str(idSolicitud), usuario2, password2, method2)
+                    resp_data = conexion_2ndo_ws.getJson()
+                    y = json.loads(resp_data)
+
+                    if y is not None:
+                        codigo=y["codigo"]
+                        mensaje=y["mensaje"]
+                        print("codigo: " + str(codigo) + ", mensaje: " + str(mensaje))
+                        guarda_fichero(get_date_time() + "." + SUBDOMAIN + ".ws2.log", str(resp_data) )
+                        if codigo == 0: # éxito de la 2nda llamada
+                            procesaJsonEstudiantes(y, alumnos_sigad)
+                            break
+                        else: # Error  en la 2ª llamada
+                            print("Fichero aún no listo. Código: " + str(codigo) 
+                                + ", mensaje: " + str(mensaje))
+            else: # Error en la 1era llamada
+                print("Error en la llamada al 1er web service")
+
+    
 
     ########################
     # Obtengo los alumnos (profesores no) que están suspendidos en moodle y miro si están en el fichero de SIGAD
@@ -350,9 +363,9 @@ def main():
     diccionario_cursos = {curso['shortname'] : curso['courseid'] for curso in cursos_moodle}
     diccionario_alumnos = {alumno['username'] : alumno['userid'] for alumno in alumnos_moodle}
     #
-    csv.append("First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email,Work Secondary Email")
+    csv.append("First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email,Work Secondary Email,New Status [UPLOAD ONLY]")
     for alumno in alumnos_sigad:
-        if num_emails_enviados >= 300: # limitacion de 2.000 emails diarios en actual cuenta de gmail
+        if num_emails_enviados >= 1000: # limitacion de 2.000 emails diarios en actual cuenta de gmail
             # TODO: seguimos teniendo esta limitación en cuenta de pago?
             mensajes_email.append("<br/>")
             mensajes_email.append(" ALCANZADO LÍMITE DE ENVÍO DE EMAILS DIARIOS ")
@@ -382,7 +395,7 @@ def main():
                 # TODO: tratar de crearlo vía API de google
                 # https://support.google.com/a/answer/40057?hl=es&p=bulk_add_users&rd=1
                 # First Name [Required],Last Name [Required],Email Address [Required],Password [Required],Password Hash Function [UPLOAD ONLY],Org Unit Path [Required],New Primary Email [UPLOAD ONLY],Recovery Email,Work Secondary Email
-                csv.append( alumno.getNombre() + "," + alumno.getApellidos() + "," + alumno.getEmailDominio() + "," + password + ",,/Alumnado,," + alumno.getEmailSigad()+ "," + alumno.getEmailSigad())
+                csv.append( alumno.getNombre() + "," + alumno.getApellidos() + "," + alumno.getEmailDominio() + "," + password + ",,/Alumnado,," + alumno.getEmailSigad()+ "," + alumno.getEmailSigad() + ",Active")
 
 
             except ValueError as e:
@@ -393,6 +406,12 @@ def main():
             #id_alumno = get_id_alumno_by_dni(moodle, alumno)
             id_alumno = diccionario_alumnos[ alumno.getDocumento().lower().rstrip() ]
             print("Tenía el id_alumno:", id_alumno);
+
+        # Comprobamos que tenemos el id de alumno
+        try:
+            id_alumno = str(int(id_alumno))
+        except ValueError:
+            continue
         
         matriculado_en = [ ]
         # Revisar si está matriculado dónde corresponda y matricular
@@ -434,7 +453,7 @@ def main():
                             print("El alumno (",id_alumno,") ya estaba matriculado en ", shortname_curso, sep="")
         # envío email
         if alumno_es_nuevo:
-            time.sleep(5) # para no saturar el envío de emails
+            time.sleep(2) # para no saturar el envío de emails
             matriculado_en_texto = "<br/>".join( map(return_text_for_html, matriculado_en) )
             nombre = return_text_for_html( alumno.getNombre() )
             apellidos = return_text_for_html( alumno.getApellidos() )
@@ -1010,25 +1029,56 @@ def get_moodle(subdomain):
 
     return container
 
-def run_moosh_command(moodle, command, capture=False):
-    #print("run_moosh_command(...)")
-    print("command: '", command, "'")
-    command_string = f"docker exec {moodle['container_name']} {command}"
-    if capture:
-        data = os.popen(command_string).read()
-        return data
-    if not capture:
-        os.system(command_string)
+def run_moosh_command(moodle, command, capture=False, timeout=10):
+    print("run_moosh_command(...)")
+    print("command:", command)
 
-def run_command(command, capture=False):
+    command_string = f"docker exec {moodle['container_name']} {command}"
+
+    try:
+        if capture:
+            result = subprocess.run(
+                command_string,
+                shell=True,           # interpreta el comando como string
+                capture_output=True,  # captura stdout y stderr
+                text=True,            # salida en str
+                timeout=timeout       # segundos máximo
+            )
+            return result.stdout
+        else:
+            subprocess.run(
+                command_string,
+                shell=True,
+                timeout=timeout
+            )
+    except subprocess.TimeoutExpired:
+        print(f"⏱️ El comando tardó más de {timeout} segundos y fue cancelado.")
+        return ""
+
+
+def run_command(command, capture=False, timeout=10):
     print("run_command(...)")
-    print("command: '", command, "'")
-    command_string = command
-    if capture:
-        data = os.popen(command_string).read()
-        return data
-    if not capture:
-        os.system(command_string)
+    print("command:", command)
+
+    try:
+        if capture:
+            result = subprocess.run(
+                command,
+                shell=True,           # mantiene compatibilidad con tu string de comando
+                capture_output=True,  # guarda stdout y stderr
+                text=True,            # convierte a str
+                timeout=timeout       # segundos máximo
+            )
+            return result.stdout
+        else:
+            subprocess.run(
+                command,
+                shell=True,
+                timeout=timeout
+            )
+    except subprocess.TimeoutExpired:
+        print(f"⏱️ El comando tardó más de {timeout} segundos y fue cancelado.")
+        return ""
 
 def matricula_alumno_en_cohorte_alumnado(moodle, id_alumno):
     """
@@ -1517,7 +1567,7 @@ def existeAlumnoEnMoodle(moodle, alumno):
     
     username = run_moosh_command(moodle, cmd, True)
 
-    if username == "":
+    if username == "" or "Error" in username:
         return False
     return True
     #
