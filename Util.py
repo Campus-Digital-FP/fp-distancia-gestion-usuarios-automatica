@@ -2,13 +2,16 @@ def creaEmailsDominio(nombre, pape, sape, documento):
     """
     Creamos un email para los estudiantes a partir de su nombre, apellidos y documento
 
-    Pablo Ruiz Soria DNI 12345678T -> pruizst@fpvirtualaragon.es
+    Marcos Ruiz García DNI 12345678T -> mruizg@fpvirtualaragon.es
     Juan Antonio Aragón de Lucía DNI 23456789G -> jaaragondlg@fpvirtualaragon.es
     Luis Miguel Saez de Burundanga DNI 56783456F -> lmsaezdbf@fpvirtualaragon.es
     """
 
     if sape is None:
         sape = ""
+
+    if documento is None: #la función isAlumnoCreable no dejará crearlo luego
+        documento = "-"
 
     print("creaEmailsDominio("+nombre+", "+pape+", "+sape+", "+documento+")")
     
@@ -23,11 +26,9 @@ def creaEmailsDominio(nombre, pape, sape, documento):
         sape = sape.lower()
         sape = eliminar_tildes_y_enes(sape)
 
-    if documento is not None: #la función isAlumnoCreable no dejará crearlo luego
-        documento = documento.lower()
-        documento = documento.replace(' ', '')
-    else:
-        documento = "-"
+    
+    documento = documento.lower()
+    documento = documento.replace(' ', '')
 
     palabras = nombre.split()
     inicialesNombre = ''.join([palabra[0] for palabra in palabras])
@@ -92,8 +93,8 @@ def conversionLFPaLOE(idMateria):
         return 5364
 #    elif idMateria == 14636: # Digitalización aplicada a los sectores productivos (GM) ( Virtual )
 #        return 
-#    elif idMateria == 14638: # Empresa y Administración
-#        return 5114
+    elif idMateria == 14638: # Empresa y Administración
+        return 5114
 #    elif idMateria == 14640: # Inglés profesional (GM)
 #        return 5111
 #    elif idMateria == 14642: # Itinerario personal para la empleabilidad I
@@ -212,8 +213,6 @@ def conversionLFPaLOE(idMateria):
         return 5351
     elif idMateria == 16703: # Sistemas operativos monopuesto
         return 5348
-#    elif idMateria == 16706: # Tutoría I
-#        return 
     elif idMateria == 16708: # Aplicaciones web
         return 4995
 #    elif idMateria == 16711: # Itinerario personal para la empleabilidad II
@@ -229,8 +228,6 @@ def conversionLFPaLOE(idMateria):
     elif idMateria == 16722: # Sistemas operativos en red
         return 4991
 #    elif idMateria == 16724: # Sostenibilidad aplicada al sistema productivo
-#        return 
-#    elif idMateria == 16726: # Tutoría II
 #        return 
 
     ####################
@@ -252,8 +249,6 @@ def conversionLFPaLOE(idMateria):
         return 13943
     elif idMateria == 15348: # Procesos de venta
         return 13942
-#    elif idMateria == 15350: # Tutoría I
-#        return 
     elif idMateria == 15352: # Comercio electrónico
         return 13954
     elif idMateria == 15354: # Gestión de un pequeño comercio
@@ -270,8 +265,6 @@ def conversionLFPaLOE(idMateria):
 #        return 
     elif idMateria == 15367: # Técnicas de almacén
         return 13950
-#    elif idMateria == 15369: # Tutoría II
-#        return 
     elif idMateria == 15371: # Venta técnica
         return 13949
 
@@ -323,8 +316,8 @@ def conversionLFPaLOE(idMateria):
         return 7909
 #    elif idMateria == 15414: # Inglés profesional ( Virtual )
 #        return 7913 # Inglés
-#    elif idMateria == 15416: # Investigación comercial ( Virtual )
-#        return 7926
+    elif idMateria == 15416: # Investigación comercial ( Virtual )
+        return 7926
 #    elif idMateria == 15418: # Itinerario personal para la empleabilidad I ( Virtual )
 #        return 8412 # FOL
     elif idMateria == 15420: # Marketing digital ( Virtual )
@@ -511,8 +504,6 @@ def conversionLFPaLOE(idMateria):
         return 5338
 #    elif idMateria == 15575: # Itinerario personal para la empleabilidad I ( Virtual )
 #        return 5344 # FOL
-#    elif idMateria == 15577: # Tutoría I ( Virtual )
-#        return 
     elif idMateria == 15579: # Infraestructuras comunes de telecomunicación en viviendas y edificios ( Virtual )
         return 4981
     elif idMateria == 15582: # Instalaciones de distribución ( Virtual )
@@ -521,8 +512,8 @@ def conversionLFPaLOE(idMateria):
         return 4982
     elif idMateria == 15586: # Instalaciones solares fotovoltaicas ( Virtual )
         return 12360
-    elif idMateria == 15588: # Itinerario personal para la empleabilidad II ( Virtual )
-        return 4986 # Empresa e iniciativa emprendedora
+#    elif idMateria == 15588: # Itinerario personal para la empleabilidad II ( Virtual )
+#        return 4986 # Empresa e iniciativa emprendedora
     elif idMateria == 15590: # Máquinas eléctricas ( Virtual )
         return 4984
 #    elif idMateria == 15592: # Módulo profesional optativo ( Virtual )
@@ -530,8 +521,6 @@ def conversionLFPaLOE(idMateria):
 #    elif idMateria == 15594: # Proyecto intermodular ( Virtual )
 #        return 
 #    elif idMateria == 15596: # Sostenibilidad aplicada al sistema productivo ( Virtual )
-#        return 
-#    elif idMateria == 15598: # Tutoría II ( Virtual )
 #        return 
     
     ####################
@@ -562,8 +551,8 @@ def conversionLFPaLOE(idMateria):
         return 12347
     elif idMateria == 18401: # Habilidades sociales ( Virtual )
         return 12350
-    elif idMateria == 18403: # Itinerario personal para la empleabilidad II ( Virtual )
-        return 12348 # EIE
+#    elif idMateria == 18403: # Itinerario personal para la empleabilidad II ( Virtual )
+#        return 12348 # EIE
 #    elif idMateria == 18405: # Módulo profesional optativo ( Virtual )
 #        return 
 #    elif idMateria == 18407: # Proyecto intermodular de educación y control ambiental ( Virtual )
@@ -588,8 +577,8 @@ def conversionLFPaLOE(idMateria):
 #        return 5225 # Inglés  Global
 #    elif idMateria == 16470: # Itinerario personal para la empleabilidad I ( Virtual )
 #        return 5458 # FOL
-#    elif idMateria == 16472: # Protocolo y relaciones públicas ( Virtual )
-#        return 5223
+    elif idMateria == 16472: # Protocolo y relaciones públicas ( Virtual )
+        return 5223
     elif idMateria == 16474: # Recursos turísticos ( Virtual )
         return 5457
     elif idMateria == 16476: # Gestión de productos turísticos ( Virtual )
@@ -701,20 +690,18 @@ def conversionLFPaLOE(idMateria):
 #        return 13927 # Lengua Extranjera  profesional: Inglés 1
 #    elif idMateria == 15766: # Itinerario personal para la empleabilidad I ( Virtual )
 #        return 13931 # FOL
-#    elif idMateria == 15768: # Sistemas de producción audiovisual ( Virtual ) KKK: Sería esto al revés
-#        return 13936
-#    elif idMateria == 13936: # TODO: Añado hecho para solucionar ausencia de docente. Hay que deshacer en julio 2025
-#        return 15768
+    elif idMateria == 15768: # Sistemas de producción audiovisual ( Virtual )
+        return 13936
     elif idMateria == 15770: # Sistemas de telefonía fija y móvil ( Virtual )
         return 13930
     elif idMateria == 15772: # Sistemas informáticos y redes locales ( Virtual )
         return 13928
-    elif idMateria == 15774: # Itinerario personal para la empleabilidad II ( Virtual )
-        return 13934 # EIE
+#    elif idMateria == 15774: # Itinerario personal para la empleabilidad II ( Virtual )
+#        return 13934 # EIE
 #    elif idMateria == 15776: # Módulo profesional optativo ( Virtual )
 #        return 
-    elif idMateria == 15778: # Proyecto de sistemas de telecomunicaciones e informáticos ( Virtual )
-        return 13941 # Proyecto de Sistemas de Telecomunicaciones e Informáticos
+#    elif idMateria == 15778: # Proyecto de sistemas de telecomunicaciones e informáticos ( Virtual )
+#        return 13941 # Proyecto de Sistemas de Telecomunicaciones e Informáticos
     elif idMateria == 15780: # Redes telemáticas ( Virtual )
         return 13937
     elif idMateria == 15782: # Sistemas de radiocomunicaciones ( Virtual )
@@ -747,8 +734,6 @@ def conversionLFPaLOE(idMateria):
         return 5329
     elif idMateria == 17998: # Primeros auxilios ( Virtual )
         return 5323
-#    elif idMateria == 18000: # Tutoría I ( Virtual )
-#        return 
     elif idMateria == 18002: # Dispensación de productos parafarmacéuticos ( Virtual )
         return 4969
     elif idMateria == 18004: # Formulación magistral ( Virtual )
@@ -762,8 +747,6 @@ def conversionLFPaLOE(idMateria):
 #    elif idMateria == 18013: # Proyecto intermodular ( Virtual )
 #        return 
 #    elif idMateria == 18015: # Sostenibilidad aplicada al sistema productivo ( Virtual )
-#        return 
-#    elif idMateria == 18017: # Tutoría II ( Virtual )
 #        return 
     
     ####################
@@ -787,8 +770,6 @@ def conversionLFPaLOE(idMateria):
 #        return 5320 # FOL
     elif idMateria == 18036: # Mantenimiento mecánico preventivo del vehículo ( Virtual )
         return 5310
-#    elif idMateria == 18038: # Tutoría I ( Virtual )
-#        return 
     elif idMateria == 18040: # Atención sanitaria especial en situaciones de emergencia ( Virtual )
         return 4955
 #    elif idMateria == 18042: # Itinerario personal para la empleabilidad II ( Virtual )
@@ -805,8 +786,6 @@ def conversionLFPaLOE(idMateria):
 #        return 
     elif idMateria == 18054: # Tele emergencia ( Virtual )
         return 4959
-#    elif idMateria == 18057: # Tutoría II ( Virtual )
-#        return 
     
     ####################
     # SSC201 - Atención a Personas en situación de Dependencia
@@ -817,8 +796,8 @@ def conversionLFPaLOE(idMateria):
         return 5379
     elif idMateria == 18498: # Características y necesidades de las personas en situación de dependencia ( Virtual )
         return 5378
-#    elif idMateria == 18500: # Destrezas sociales ( Virtual )
-#        return 5125
+    elif idMateria == 18500: # Destrezas sociales ( Virtual )
+        return 5125
 #    elif idMateria == 18502: # Digitalización aplicada a los sectores productivos (GM) ( Virtual )
 #        return 
 #    elif idMateria == 18504: # Inglés profesional (GM) ( Virtual )
@@ -827,8 +806,6 @@ def conversionLFPaLOE(idMateria):
 #        return 5384 # FOL
     elif idMateria == 18508: # Primeros auxilios ( Virtual )
         return 5375
-#    elif idMateria == 18510: # Tutoría I ( Virtual )
-#        return 
     elif idMateria == 18512: # Apoyo a la comunicación ( Virtual )
         return 5128
     elif idMateria == 18514: # Apoyo domiciliario ( Virtual )
@@ -847,8 +824,6 @@ def conversionLFPaLOE(idMateria):
 #        return 
     elif idMateria == 18528: # Teleasistencia ( Virtual )
         return 5135
-#    elif idMateria == 18530: # Tutoría II ( Virtual )
-#        return 
     
     ####################
     # SSC302 - Educación Infantil (Formación Profesional)
@@ -861,8 +836,8 @@ def conversionLFPaLOE(idMateria):
         return 5432
 #    elif idMateria == 18593: # Digitalización aplicada a los sectores productivos (GS) ( Virtual )
 #        return 
-#    elif idMateria == 18595: # Habilidades sociales ( Virtual )
-#        return 5213
+    elif idMateria == 18595: # Habilidades sociales ( Virtual )
+        return 5213
 #    elif idMateria == 18597: # Inglés profesional ( Virtual )
 #        return 5445 # Lengua extranjera profesional: inglés 1
 #    elif idMateria == 18599: # Itinerario personal para la empleabilidad I ( Virtual )
@@ -893,16 +868,16 @@ def conversionLFPaLOE(idMateria):
         return 7874
 #    elif idMateria == 18623: # Digitalización aplicada a los sectores productivos (GS) ( Virtual )
 #        return 
-#    elif idMateria == 18625: # Habilidades sociales ( Virtual )
-#        return 7899
+    elif idMateria == 18625: # Habilidades sociales ( Virtual )
+        return 7899
 #    elif idMateria == 18627: # Inglés profesional ( Virtual )
 #        return 7884 # Lengua extranjera profesional: Inglés 1
     elif idMateria == 18629: # Inserción sociolaboral ( Virtual )
         return 7875
 #    elif idMateria == 18631: # Itinerario personal para la empleabilidad I ( Virtual )
 #        return 8339 # FOL
-#    elif idMateria == 18633: # Metodología de la intervención social ( Virtual )
-#        return 7897
+    elif idMateria == 18633: # Metodología de la intervención social ( Virtual )
+        return 7897
     elif idMateria == 18635: # Primeros auxilios ( Virtual )
         return 7882
     elif idMateria == 18637: # Promoción de la autonomía personal ( Virtual )
@@ -917,8 +892,8 @@ def conversionLFPaLOE(idMateria):
         return 7877
 #    elif idMateria == 18647: # Módulo profesional optativo ( Virtual )
 #        return 
-    elif idMateria == 18649: # Proyecto intermodular de integración social ( Virtual )
-        return 7901 # Proyecto de integración social
+#    elif idMateria == 18649: # Proyecto intermodular de integración social ( Virtual )
+#        return 7901 # Proyecto de integración social
     elif idMateria == 18651: # Sistemas aumentativos y alternativos de comunicación  ( Virtual )
         return 7896
 #    elif idMateria == 18653: # Sostenibilidad aplicada al sistema productivo ( Virtual )
